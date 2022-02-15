@@ -52,5 +52,5 @@
   "devDependencies": {
     "gh-pages": "^3.2.3"
   },
-  "homepage": "https://disboxapp.github.io/web"
+  "homepage": "https://disboxapp.github.io/web/"
 }

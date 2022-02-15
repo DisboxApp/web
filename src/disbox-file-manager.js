@@ -1,5 +1,19 @@
 import { sha256 } from 'js-sha256';
 
+
+function load(url) {
+    return new Promise((resolve, reject) => {
+      var script = document.createElement('script')
+      script.type = 'text/javascript';
+      script.async = true;
+      script.src = url;
+      script.onload = resolve;
+      script.onerror = reject;
+      document.head.appendChild(script);
+    })
+  }
+  
+
 const SERVER_URL = 'http://34.121.204.89';
 export const FILE_DELIMITER = '/';
 const FILE_CHUNK_SIZE = 8 * 1000 * 999 // Almost 8MB
@@ -55,7 +69,7 @@ class DiscordFileStorage {
     }
 
     async download(messageIds, suggestedName="", onProgress=null) {
-        const fileHandler = await showSaveFilePicker({
+        const fileHandler = await window.showSaveFilePicker({
             suggestedName: suggestedName,
         })
         const writer = await fileHandler.createWritable();

@@ -5,7 +5,7 @@ function NavigationBar() {
     return (
         <Navbar bg="dark" variant="dark" className="font">
             <Container>
-                <Navbar.Brand as={Link} to="/home"><b style={{ fontSize: "1.3rem" }}>Disbox</b></Navbar.Brand>
+                <Navbar.Brand as={Link} to=""><b style={{ fontSize: "1.3rem" }}>Disbox</b></Navbar.Brand>
                 <Navbar.Collapse>
                     <Nav className="me-auto">
                         <NavItem eventkey={1} href="/home">
