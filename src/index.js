@@ -24,11 +24,11 @@ function HomeOrApp() {
 
 ReactDOM.render(
   <React.StrictMode>
-    <BrowserRouter basename='/web'>
+    <BrowserRouter basename={window.location.pathname || ''}>
       <Routes>
         {/* <Route path="/" element={<App />} /> */}
         <Route path="" element={<HomeOrApp />}/>
-        <Route path="web/home" element={<Home />}/>
+        <Route path="home" element={<Home />}/>
         <Route path="setup" element={<Setup />} />
       </Routes>
     </BrowserRouter>
