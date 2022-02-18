@@ -95,6 +95,7 @@ class DiscordFileStorage {
         console.log(writer);
 
         let index = 0;
+        onProgress(0, messageIds.length);
         for (let id of messageIds) {
             const message = await this.getMessage(id);
             console.log(message);
@@ -102,8 +103,7 @@ class DiscordFileStorage {
 
             const blob = await this.fetchUrl(attachment.url);
             await writer.write(blob);
-            console.
-                index++;
+            index++;
             if (onProgress) {
                 onProgress(index, messageIds.length);
             }
