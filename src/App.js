@@ -5,9 +5,10 @@ import React, { useEffect, useState } from 'react';
 import NavigationBar from './NavigationBar';
 import ThemeSwitch from './ThemeSwitch';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
-import { CssBaseline, Button, Tooltip } from '@mui/material';
+import { CssBaseline, Button, Tooltip, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions } from '@mui/material';
 import { Button as BsButton } from 'react-bootstrap';
 import SearchBar from './SearchBar';
+import { useNavigate } from 'react-router-dom';
 
 
 const darkTheme = createTheme({
@@ -93,8 +94,16 @@ function App() {
     const [searchValue, setSearchValue] = useState("");
 
     const [uploading, setUploading] = useState(false);
+    const [showFirstTimeDialog, setShowFirstTimeDialog] = useState(false);
+    const navigate = useNavigate();
 
     useEffect(() => {
+        const firstTime = localStorage.getItem("firstTime") === null;
+        if (firstTime) {
+            localStorage.setItem("firstTime", "false");
+            setShowFirstTimeDialog(true);
+        }
+
         const webhookUrl = localStorage.getItem("webhookUrl");
         async function init() {
             if (webhookUrl) {
@@ -245,7 +254,7 @@ function App() {
     }
 
 
-    const showSearchResults = (value=null) => {
+    const showSearchResults = (value = null) => {
         if (value === null) {
             value = searchValue;
         }
@@ -350,6 +359,22 @@ function App() {
 
     return (
         <div style={{ height: "87vh" }}>
+            <Dialog open={showFirstTimeDialog} onClose={() => { setShowFirstTimeDialog(false) }}>
+                <DialogTitle>Disclaimer</DialogTitle>
+                <DialogContent>
+                    <DialogContentText>
+                        It is recommended to use Disbox with our official chrome extension for
+                        better download speeds and increased security.
+                        The extension is waiting for approval by Google and will be available on 
+                        the Chrome Store soon.
+                    </DialogContentText>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => { setShowFirstTimeDialog(false) }} autoFocus>Continue</Button>
+                </DialogActions>
+            </Dialog>
+
+
             <NavigationBar />
             <ThemeProvider theme={theme ? darkTheme : lightTheme}>
                 <CssBaseline />
@@ -357,10 +382,10 @@ function App() {
                     <div className='m-2'>
                         <Tooltip title="Select a file or directory to show them or hit enter to show all matching results" placement="bottom-end">
                             <div>
-                            <SearchBar fileManager={fileManager} files={true} directories={true} advanced={true}
-                                search={true} onOptionsChanged={(options) => {setSearchOptions(options)}}
-                                onChange={(value) => {setSearchValue(value)}} onSelect={showSearchResults} onEnter={showSearchResults} 
-                                placeholder="Search for files, directories, extensions (e.g. ext:png)"/>
+                                <SearchBar fileManager={fileManager} files={true} directories={true} advanced={true}
+                                    search={true} onOptionsChanged={(options) => { setSearchOptions(options) }}
+                                    onChange={(value) => { setSearchValue(value) }} onSelect={showSearchResults} onEnter={showSearchResults}
+                                    placeholder="Search for files, directories, extensions (e.g. ext:png)" />
                             </div>
                         </Tooltip>
                     </div>

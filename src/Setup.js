@@ -26,7 +26,7 @@ function Setup() {
                 <div style={{ fontSize: "1.5rem", textAlign: "left", width: "80%", margin: "2rem" }} className="mt-4">
                     <b style={{ color: "#555555" }}>1.</b> Open a <a href="https://discord.com/app" target="_blank" rel="noopener noreferrer">Discord</a> account, if you don't already have one.
                     <div style={{ height: "1rem" }} />
-                    <b style={{ color: "#555555" }}>2.</b> Open a new server, and don't add anyone to it.
+                    <b style={{ color: "#555555" }}>2.</b> Open a new server.
                     Don't share this server with anyone, as it will be used to store your files.
                     <div style={{ height: "1rem" }} />
                     <b style={{ color: "#555555" }}>3.</b> Open <b>Server Settings</b> from the top left menu, select <b>Integrations</b> and click <b>Create Webhook</b>.

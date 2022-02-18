@@ -1,25 +1,13 @@
+/*global chrome*/
 import { sha256 } from 'js-sha256';
 
 
-function load(url) {
-    return new Promise((resolve, reject) => {
-      var script = document.createElement('script')
-      script.type = 'text/javascript';
-      script.async = true;
-      script.src = url;
-      script.onload = resolve;
-      script.onerror = reject;
-      document.head.appendChild(script);
-    })
-  }
-  
-
-const SERVER_URL = 'http://34.121.204.89';
+const SERVER_URL = 'https://disboxserver.herokuapp.com';
 export const FILE_DELIMITER = '/';
 const FILE_CHUNK_SIZE = 8 * 1000 * 999 // Almost 8MB
 
 
-async function* readFile(file, chunkSize, callback) {
+async function* readFile(file, chunkSize) {
     var fileSize = file.size;
     var offset = 0;
 
@@ -28,9 +16,11 @@ async function* readFile(file, chunkSize, callback) {
         var blob = file.slice(offset, offset + chunkSize);
         yield await blob.arrayBuffer();
         offset += chunkSize;
- 
+
     }
 }
+
+
 class DiscordFileStorage {
     constructor(webhookUrl) {
         this.id = webhookUrl.split('/').slice(0, -1).pop();
@@ -45,7 +35,7 @@ class DiscordFileStorage {
             method: 'POST',
             body: formData,
         });
-        return await result.json(); 
+        return await result.json();
     }
 
     async getMessage(id) {
@@ -68,11 +58,41 @@ class DiscordFileStorage {
         return messageIds;
     }
 
-    async download(messageIds, suggestedName="", onProgress=null) {
+    async fetchUrlFromExtension(url) {
+        return new Promise((resolve, reject) => {
+            try {
+                chrome.runtime.sendMessage("cifapblgkjmandlgommaccjnpidakohc", { message: {url: url } }, response => {
+                    if (!("data" in response)) {
+                        resolve(null);
+                    }
+                    resolve(response.data);
+    
+                });
+            } catch {
+                resolve(null);
+            }
+        });
+    }
+
+    async fetchUrlFromProxy(url) {
+        return await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`);  
+    }
+
+    async fetchUrl(url) {
+        const extensionResult = await this.fetchUrlFromExtension(url);
+        console.log(extensionResult.length);
+        if (extensionResult !== null) {
+            return await (await fetch(extensionResult)).blob();
+        }
+        return await (await this.fetchUrlFromProxy(url)).blob();
+    }
+
+    async download(messageIds, suggestedName = "", onProgress = null) {
         const fileHandler = await window.showSaveFilePicker({
             suggestedName: suggestedName,
-        })
+        });
         const writer = await fileHandler.createWritable();
+        console.log(writer);
 
         let index = 0;
         for (let id of messageIds) {
@@ -80,11 +100,10 @@ class DiscordFileStorage {
             console.log(message);
             const attachment = message.attachments[0];
 
-            const blob = await (await fetch(attachment.url, {headers: {
-                'Content-Type': 'application/octet-stream'
-            }})).blob();
+            const blob = await this.fetchUrl(attachment.url);
             await writer.write(blob);
-            index++;
+            console.
+                index++;
             if (onProgress) {
                 onProgress(index, messageIds.length);
             }
@@ -94,6 +113,7 @@ class DiscordFileStorage {
     }
 
 }
+
 
 
 class DisboxFileManager {
@@ -132,8 +152,8 @@ class DisboxFileManager {
     getChildren(path) {
         let children = {};
         if (path === '') {
-            children = this.fileTree.children  || {};
-        } else  {
+            children = this.fileTree.children || {};
+        } else {
             const file = this.getFile(path);
             if (!file) {
                 throw new Error(`File not found: ${path}`);
@@ -261,7 +281,7 @@ class DisboxFileManager {
         await this.createFile(path, 'directory');
     }
 
-    async createFile(path, type="file") {
+    async createFile(path, type = "file") {
         const file = this.getFile(path);
         if (file) {
             throw new Error(`File already exists: ${path}`);
