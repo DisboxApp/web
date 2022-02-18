@@ -10,7 +10,6 @@ function Setup() {
         event.preventDefault();
         const webhookUrl = document.getElementById("webhookUrl").value;
         localStorage.setItem("webhookUrl", webhookUrl);
-        console.log(webhookUrl);
         navigate("/");
     };
     return (<div>

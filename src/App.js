@@ -1,14 +1,18 @@
-import { DataGrid } from '@mui/x-data-grid';
+import { DataGrid, GridCloseIcon } from '@mui/x-data-grid';
 import './App.css';
 import DisboxFileManager, { FILE_DELIMITER } from "./disbox-file-manager";
 import React, { useEffect, useState } from 'react';
 import NavigationBar from './NavigationBar';
 import ThemeSwitch from './ThemeSwitch';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
-import { CssBaseline, Button, Tooltip, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions } from '@mui/material';
+import { ThemeProvider, createTheme, styled } from '@mui/material/styles';
+import {
+    CssBaseline, Button, Tooltip, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions,
+    Snackbar, IconButton, LinearProgress, linearProgressClasses, Alert, Typography
+} from '@mui/material';
 import { Button as BsButton } from 'react-bootstrap';
 import SearchBar from './SearchBar';
 import { useNavigate } from 'react-router-dom';
+import { Box } from '@mui/system';
 
 
 const darkTheme = createTheme({
@@ -63,6 +67,18 @@ function PathParts(props) {
     </div>
 }
 
+const BorderLinearProgress = styled(LinearProgress)(({ theme }) => ({
+    height: 10,
+    borderRadius: 5,
+    [`&.${linearProgressClasses.colorPrimary}`]: {
+        backgroundColor: theme.palette.grey[theme.palette.mode === 'light' ? 200 : 800],
+    },
+    [`& .${linearProgressClasses.bar}`]: {
+        borderRadius: 5,
+        backgroundColor: theme.palette.mode === 'light' ? '#1a90ff' : '#308fe8',
+    },
+}));
+
 
 function formatSize(bytes, decimals = 1) {
     if (bytes === 0) return '0 Bytes';
@@ -87,13 +103,14 @@ function App() {
     const [rows, setRows] = useState([]);
     const [theme, setTheme] = useState(true);
 
-    const [parent, setParent] = useState(null);
     const [path, setPath] = useState(null);
 
     const [searchOptions, setSearchOptions] = useState([]);
     const [searchValue, setSearchValue] = useState("");
 
-    const [uploading, setUploading] = useState(false);
+    const [currentAction, setCurrentAction] = useState("");
+    const [showProgress, setShowProgress] = useState(false);
+    const [progressValue, setProgressValue] = useState(0);
     const [showFirstTimeDialog, setShowFirstTimeDialog] = useState(false);
     const navigate = useNavigate();
 
@@ -112,11 +129,23 @@ function App() {
                 setFileManager(manager);
                 setRows(Object.values(await manager.getChildren("")));
                 setPath("");
-                setParent(null);
+                // setParent(null);
             }
         }
         init();
     }, []);
+
+    useEffect(() => {
+        console.log("currentAction", currentAction);
+        if (currentAction === "") {
+            setTimeout(() => {
+                setShowProgress(false);
+                setProgressValue(0);
+            }, 3000);
+        } else {
+            setShowProgress(true);
+        }
+    }, [currentAction]);
 
     const getRowById = (id) => {
         return rows.find(row => row.id === id);
@@ -152,7 +181,7 @@ function App() {
     const showDirectory = async (path) => {
         setPath(path);
         const parent = await fileManager.getParent(path);
-        setParent(parent ? parent.path : null);
+        // setParent(parent ? parent.path : null);
         setRows(Object.values(await fileManager.getChildren(path)));
     }
 
@@ -184,59 +213,80 @@ function App() {
         await showDirectory(params.row.path);
     }
 
-    const onDeleteFileClick = async (params) => {
-        try {
-            await fileManager.deleteFile(params.row.path);
-            deleteRowById(params.row.id);
-        } catch (e) {
-            alert(`Failed to delete file: ${e}`);
-            throw e;
-        }
-    }
-
-    const onDownloadFileClick = async (params) => {
-        try {
-            await fileManager.downloadFile(params.row.path, (size, total) => { console.log(`Downloading ${formatSize(size)} of ${formatSize(total)}`); });
-        } catch (e) {
-            alert(`Failed to download file: ${e}`);
-            throw e;
-        }
-    }
-
 
     const getAvailableFileName = async (originalName) => {
         const extension = originalName.includes(".") ? originalName.split(".").pop() : "";
         let name = originalName.includes(".") ? originalName.substring(0, originalName.lastIndexOf(".")) : originalName;
         let tryIndex = 1;
         while (await fileManager.getFile(`${path}${FILE_DELIMITER}${name}`)) {
-            console.log(await fileManager.getFile(`${path}${FILE_DELIMITER}${name}`));
             name = `${originalName} (${tryIndex})`;
             tryIndex++;
         }
         return name + (extension ? `.${extension}` : "");
     }
 
+    const onProgress = (value, total, bytes=true) => {
+        const percentage = Math.round((value / total) * 100).toFixed(0);
+        console.log(percentage);
+        setProgressValue(percentage);
+    }
 
-    const onUploadFileClick = async (params) => {
-        if (uploading) {
+    const onDeleteFileClick = async (params) => {
+        if (currentAction) {
             return;
         }
-        setUploading(true);
+        try {
+            setCurrentAction(`Deleting ${params.row.name}`);
+            await fileManager.deleteFile(params.row.path, onProgress);
+            deleteRowById(params.row.id);
+        } catch (e) {
+            alert(`Failed to delete file: ${e}`);
+            throw e;
+        } finally {
+            setCurrentAction("");
+        }
+    }
+
+
+    const onUploadFileClick = async (params) => {
+        if (currentAction) {
+            return;
+        }
         const file = params.target.files[0];
         const fileName = await getAvailableFileName(file.name);
+        setCurrentAction(`Uploading ${fileName}`);
         const filePath = `${path}${FILE_DELIMITER}${fileName}`;
         try {
-            await fileManager.uploadFile(filePath, file);
+            await fileManager.uploadFile(filePath, file, onProgress);
             const row = fileManager.getFile(filePath);
-            console.log(row);
             addRow(row);
         } catch (e) {
             alert(`Failed to upload file: ${e}`);
             throw e;
         } finally {
-            setUploading(false);
+            setCurrentAction("");
             params.target.value = null;
         }
+    }
+
+    const onDownloadFileClick = async (params) => {
+        if (currentAction) {
+            return;
+        }
+        try {
+            const fileHandler = await window.showSaveFilePicker({
+                suggestedName: params.row.name,
+            });
+            const writer = await fileHandler.createWritable();
+            setCurrentAction(`Downloading ${params.row.name}`);
+            await fileManager.downloadFile(params.row.path, writer, onProgress);
+        } catch (e) {
+            alert(`Failed to download file: ${e}`);
+            throw e;
+        } finally {
+            setCurrentAction("");
+        }
+
     }
 
     const onNewFolderClick = async (params) => {
@@ -248,8 +298,6 @@ function App() {
             addRow(row);
         } catch (e) {
             alert(`Failed to create folder: ${e}`);
-
-
         }
     }
 
@@ -318,7 +366,7 @@ function App() {
             renderCell: (params) => (
                 <div>
                     <Button
-                        disabled={params.row.type === "directory"}
+                        disabled={params.row.type === "directory" || currentAction !== ""}
                         variant="text"
                         color="primary"
                         style={{ marginLeft: 16 }}
@@ -359,25 +407,46 @@ function App() {
 
     return (
         <div style={{ height: "87vh" }}>
-            <Dialog open={showFirstTimeDialog} onClose={() => { setShowFirstTimeDialog(false) }}>
-                <DialogTitle>Disclaimer</DialogTitle>
-                <DialogContent>
-                    <DialogContentText>
-                        It is recommended to use Disbox with our official chrome extension for
-                        better download speeds and increased security.
-                        The extension is waiting for approval by Google and will be available on 
-                        the Chrome Store soon.
-                    </DialogContentText>
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={() => { setShowFirstTimeDialog(false) }} autoFocus>Continue</Button>
-                </DialogActions>
-            </Dialog>
-
-
             <NavigationBar />
             <ThemeProvider theme={theme ? darkTheme : lightTheme}>
                 <CssBaseline />
+                <Dialog open={showFirstTimeDialog} onClose={() => { setShowFirstTimeDialog(false) }}>
+                    <DialogTitle>Disclaimer</DialogTitle>
+                    <DialogContent>
+                        <DialogContentText>
+                            It is recommended to use Disbox with our official chrome extension for
+                            better download speeds and increased security.
+                            The extension is waiting for approval by Google and will be available on
+                            the Chrome Store soon.
+                        </DialogContentText>
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={() => { setShowFirstTimeDialog(false) }} autoFocus>Continue</Button>
+                    </DialogActions>
+                </Dialog>
+
+                <Snackbar
+                    // onClose={handleClose}
+                    message="Notea archived"
+                    anchorOrigin={{ vertical: 'bottom', horizontal: 'right', }}
+                    open={showProgress}
+                >
+                    <Box style={{ backgroundColor: "white", width: "500px", height: "35px" }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', marginTop:"4px"}}>
+                            <Box sx={{ width: '100%', mr: 1, ml: 1 }}>
+                                <BorderLinearProgress variant="determinate" value={progressValue} />
+                            </Box>
+                            <Box sx={{ minWidth: 35 }}>
+                                <Typography sx={{ color: "black" }} variant="body2" color="text.secondary">{`${progressValue}%`}</Typography>
+                            </Box>
+                            <IconButton size="small" aria-label="close" sx={{color:"black"}} onClick={() => {setShowProgress(false)}}>
+                                <GridCloseIcon fontSize="small" />
+                            </IconButton>
+                        </Box>
+
+                    </Box>
+                </Snackbar>
+
                 <div style={{ height: "100%" }}>
                     <div className='m-2'>
                         <Tooltip title="Select a file or directory to show them or hit enter to show all matching results" placement="bottom-end">
@@ -391,8 +460,8 @@ function App() {
                     </div>
                     <div className='m-2'>
                         <input id="uploadFile" type="file" style={{ display: "none" }} onChange={onUploadFileClick}></input>
-                        <BsButton variant="outline-primary" onClick={() => { document.getElementById("uploadFile").click() }} disabled={(uploading || path === null)}>Upload file</BsButton>
-                        <BsButton variant="outline-primary" style={{ marginLeft: "0.25rem" }} onClick={onNewFolderClick} disabled={(uploading || path === null)}>New Folder</BsButton>
+                        <BsButton variant="outline-primary" onClick={() => { document.getElementById("uploadFile").click() }} disabled={(currentAction !== "" || path === null)}>Upload file</BsButton>
+                        <BsButton variant="outline-primary" style={{ marginLeft: "0.25rem" }} onClick={onNewFolderClick} disabled={(currentAction !== "" || path === null)}>New Folder</BsButton>
                     </div>
                     <PathParts path={path} fileManager={fileManager} showDirectory={showDirectory} />
                     <div style={{ height: "82.5%", width: '100%' }}>
