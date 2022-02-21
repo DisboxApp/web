@@ -122,7 +122,11 @@ function App() {
 
     useEffect(() => {
         try {
-            chrome.runtime.sendMessage("jklpfhklkhbfgeencifbmkoiaokeieah", { message: {} }, response => {});
+            chrome.runtime.sendMessage("jklpfhklkhbfgeencifbmkoiaokeieah", { message: {} }, response => {
+                if (!response || !response.installed) {
+                    setShowExtensionDialog(true);
+                }
+            });
         } catch {
             setShowExtensionDialog(true);
         }
@@ -423,7 +427,6 @@ function App() {
             ),
         }
     ];
-
 
     return (
         <div style={{ height: "87vh" }}>
