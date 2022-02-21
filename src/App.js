@@ -1,3 +1,4 @@
+/*global chrome*/
 import { DataGrid, GridCloseIcon } from '@mui/x-data-grid';
 import './App.css';
 import DisboxFileManager, { FILE_DELIMITER } from "./disbox-file-manager";
@@ -13,7 +14,9 @@ import { Button as BsButton } from 'react-bootstrap';
 import SearchBar from './SearchBar';
 import { useNavigate } from 'react-router-dom';
 import { Box } from '@mui/system';
+import * as mime from 'react-native-mime-types';
 
+const EXTENSION_URL = "https://chrome.google.com/webstore/detail/disboxdownloader/jklpfhklkhbfgeencifbmkoiaokeieah";
 
 const darkTheme = createTheme({
     palette: {
@@ -40,9 +43,12 @@ function PathParts(props) {
 
     useEffect(() => {
         async function f() {
-            if (props.fileManager) {
-                const parts = [];
-                if (props.path) {
+            if (!props.fileManager) {
+                return;
+            }
+            const parts = [];
+            if (props.path !== null) {
+                if (props.path !== "") {
                     parts.push(<PathPart fileManager={props.fileManager} path={props.path}
                         name={await props.fileManager.getFile(props.path).name} showDirectory={props.showDirectory} />);
                 }
@@ -50,10 +56,11 @@ function PathParts(props) {
                 while (parent && "path" in parent) {
                     parts.push(<PathPart fileManager={props.fileManager} path={parent.path} name={parent.name} showDirectory={props.showDirectory} />);
                     parent = await props.fileManager.getParent(parent.path);
-                }
-                parts.push(<PathPart fileManager={props.fileManager} path={""} name={"Storage"} showDirectory={props.showDirectory} />);
-                setPartComponents(parts.reverse());
+                }    
             }
+            parts.push(<PathPart fileManager={props.fileManager} path={""} name={"Storage"} showDirectory={props.showDirectory} />);
+            setPartComponents(parts.reverse());
+            
         }
         f();
     }, [props.path]);
@@ -78,7 +85,6 @@ const BorderLinearProgress = styled(LinearProgress)(({ theme }) => ({
         backgroundColor: theme.palette.mode === 'light' ? '#1a90ff' : '#308fe8',
     },
 }));
-
 
 function formatSize(bytes, decimals = 1) {
     if (bytes === 0) return '0 Bytes';
@@ -111,16 +117,16 @@ function App() {
     const [currentAction, setCurrentAction] = useState("");
     const [showProgress, setShowProgress] = useState(false);
     const [progressValue, setProgressValue] = useState(0);
-    const [showFirstTimeDialog, setShowFirstTimeDialog] = useState(false);
+    const [showExtensionDialog, setShowExtensionDialog] = useState(false);
     const navigate = useNavigate();
 
     useEffect(() => {
-        const firstTime = localStorage.getItem("firstTime") === null;
-        if (firstTime) {
-            localStorage.setItem("firstTime", "false");
-            setShowFirstTimeDialog(true);
+        try {
+            chrome.runtime.sendMessage("jklpfhklkhbfgeencifbmkoiaokeieah", { message: {} }, response => {});
+        } catch {
+            setShowExtensionDialog(true);
         }
-
+        
         const webhookUrl = localStorage.getItem("webhookUrl");
         async function init() {
             if (webhookUrl) {
@@ -146,6 +152,12 @@ function App() {
             setShowProgress(true);
         }
     }, [currentAction]);
+
+
+    useEffect(() => {
+        console.log(rows);
+    }, [rows]);
+
 
     const getRowById = (id) => {
         return rows.find(row => row.id === id);
@@ -195,15 +207,12 @@ function App() {
             return;
         }
         try {
-            const changes = await fileManager.renameFile(row.path, newValue);
-            for (const [key, value] of Object.entries(changes)) {
-                row[key] = value;
-            }
+            const changedFile = await fileManager.renameFile(row.path, newValue);
+            updateRowById(params.id, changedFile);
         } catch (e) {
             alert(`Failed to rename file: ${e}`);
             throw e;
         }
-        updateRowById(params.id, row);
     }
 
     const onCellDoubleClick = async (params) => {
@@ -274,9 +283,20 @@ function App() {
             return;
         }
         try {
-            const fileHandler = await window.showSaveFilePicker({
-                suggestedName: params.row.name,
-            });
+            const fileName = params.row.name;
+            let pickerConfig = {
+                suggestedName: fileName
+            }
+            if (fileName.includes(".")) {
+                let extension = `.${fileName.split(".").pop()}`;
+                const mimeType = mime.lookup(fileName) || 'application/octet-stream';
+                console.log(extension, mimeType);
+                // pickerConfig.types = [{
+                //     description: extension,
+                //     accept: {[mimeType]: [extension] }
+                // }]
+            }
+            const fileHandler = await window.showSaveFilePicker(pickerConfig);
             const writer = await fileHandler.createWritable();
             setCurrentAction(`Downloading ${params.row.name}`);
             await fileManager.downloadFile(params.row.path, writer, onProgress);
@@ -410,18 +430,20 @@ function App() {
             <NavigationBar />
             <ThemeProvider theme={theme ? darkTheme : lightTheme}>
                 <CssBaseline />
-                <Dialog open={showFirstTimeDialog} onClose={() => { setShowFirstTimeDialog(false) }}>
-                    <DialogTitle>Disclaimer</DialogTitle>
+                <Dialog open={showExtensionDialog} onClose={() => { setShowExtensionDialog(false) }}>
+                    <DialogTitle>Warning</DialogTitle>
                     <DialogContent>
                         <DialogContentText>
                             It is recommended to use Disbox with our official chrome extension for
                             better download speeds and increased security.
-                            The extension is waiting for approval by Google and will be available on
-                            the Chrome Store soon.
                         </DialogContentText>
                     </DialogContent>
                     <DialogActions>
-                        <Button onClick={() => { setShowFirstTimeDialog(false) }} autoFocus>Continue</Button>
+                        <Button onClick={() => { setShowExtensionDialog(false) }}>Remind me later</Button>
+                        <Button variant="contained" onClick={() => {
+                            setShowExtensionDialog(false);
+                            window.open(EXTENSION_URL, "_blank").focus();
+                        } } >Install</Button>
                     </DialogActions>
                 </Dialog>
 
@@ -451,7 +473,7 @@ function App() {
                     <div className='m-2'>
                         <Tooltip title="Select a file or directory to show them or hit enter to show all matching results" placement="bottom-end">
                             <div>
-                                <SearchBar fileManager={fileManager} files={true} directories={true} advanced={true}
+                                <SearchBar fileManager={fileManager} files={true} directories={true} advanced={true} rows={rows}
                                     search={true} onOptionsChanged={(options) => { setSearchOptions(options) }}
                                     onChange={(value) => { setSearchValue(value) }} onSelect={showSearchResults} onEnter={showSearchResults}
                                     placeholder="Search for files, directories, extensions (e.g. ext:png)" />

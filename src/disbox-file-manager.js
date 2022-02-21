@@ -68,8 +68,8 @@ class DiscordFileStorage {
     async fetchUrlFromExtension(url) {
         return new Promise((resolve, reject) => {
             try {
-                chrome.runtime.sendMessage("cifapblgkjmandlgommaccjnpidakohc", { message: {url: url } }, response => {
-                    if (!("data" in response)) {
+                chrome.runtime.sendMessage("jklpfhklkhbfgeencifbmkoiaokeieah", { message: {url: url } }, response => {
+                    if (!response || !("data" in response)) {
                         resolve(null);
                     }
                     resolve(response.data);
@@ -222,7 +222,7 @@ class DisboxFileManager {
         for (let key in changes) {
             file[key] = changes[key];
         }
-        return changes;
+        return file;
     }
 
     async renameFile(path, newName) {
@@ -238,10 +238,10 @@ class DisboxFileManager {
         const changes = await this.updateFile(file.path, { name: newName });
 
         const parent = this.getParent(path);
-        parent.children[file.name] = undefined;
-        parent.children[newName] = file;
+        delete parent.children[file.name];
+        parent.children[changes.name] = changes;
 
-        return changes;
+        return this.getFile(newPath);
     }
 
     async moveFile(path, newParentPath) {
@@ -262,11 +262,11 @@ class DisboxFileManager {
         if (newFile) {
             throw new Error(`File already exists: ${newPath}`);
         }
-        const result = await this.updateFile(file.path, { parent_id: newParent.id });
+        const changes = await this.updateFile(file.path, { parent_id: newParent.id });
 
-        parent.children[file.name] = undefined;
+        delete parent.children[file.name];
         newParent.children[file.name] = file;
-        return result;
+        return changes;
     }
 
     // TODO: Delete a non-empty directory?
@@ -290,7 +290,7 @@ class DisboxFileManager {
         }
         await this.discordFileStorage.delete(JSON.parse(file.content), onProgress);
         const parent = this.getParent(path);
-        parent.children[file.name] = undefined;
+        delete parent.children[file.name];
         return await result.json();
     }
 

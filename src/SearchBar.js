@@ -1,7 +1,7 @@
 import { Autocomplete, TextField } from "@mui/material";
 import { useEffect, useState } from "react";
 
-function SearchBar({ fileManager, files = true, directories = true,
+function SearchBar({ fileManager, files = true, directories = true, rows,
      advanced = true, search = true, placeholder = "Search", onSelect, onEnter, onOptionsChanged, onChange }) {
 
     const [baseOptions, setBaseOptions] = useState(new Set());
@@ -43,7 +43,7 @@ function SearchBar({ fileManager, files = true, directories = true,
         setBaseOptions(new Set(options));
         setByExtension(byExtension);
 
-    }, [fileManager]);
+    }, [rows]);
 
 
     const setAutoCompleteOptions = (event, value) => {
