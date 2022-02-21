@@ -437,7 +437,7 @@ function App() {
                     <DialogTitle>Warning</DialogTitle>
                     <DialogContent>
                         <DialogContentText>
-                            It is recommended to use Disbox with our official chrome extension for
+                            Disbox recommends using the official Disbox chrome extension for
                             better download speeds and increased security.
                         </DialogContentText>
                     </DialogContent>

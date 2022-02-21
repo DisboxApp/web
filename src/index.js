@@ -6,13 +6,11 @@ import Setup from './Setup';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 import 'bootstrap/dist/css/bootstrap.css';
-import { RecoilRoot } from 'recoil';
 import {
   BrowserRouter,
   Routes,
   Route
 } from "react-router-dom";
-
 
 function HomeOrApp() {
   if (localStorage.getItem("webhookUrl") === null) {
