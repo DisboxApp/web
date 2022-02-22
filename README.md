@@ -15,13 +15,14 @@ Using Discord allows for easy and secure logins, fast uploads and downloads, mul
 | Create folders             | ✅                        | "New folder" button                   | `createDirectory(path)`                               |
 | Download files             | ✅                        | "Download" column                     | `downloadFile(path, fileSystemWritable, onProgress)`  |
 | Delete files/empty folders | ✅                        | "Delete" column                       | `deleteFile(path, onProgress)`                        |
-| Rename                     | ✅                        | Double-click name                     | `renameFile(path, newName)`                           |
+| Rename                     | ✅                        | Double-click name column             | `renameFile(path, newName)`                           |
 | Show folder                | ✅                        | Double-click row (except name column) | `getChildren(path)`                                   |
-| Sort & Filter              | ✅ UI Only                | Click column headers                  | -                                                     |
+| Sort              | ✅ UI Only                | Click column header                  | -                                                     |
+| Filter              | ✅ UI Only                | Click 3 dots on column headers                  | -                                                     |
 | Search                     | ✅ UI Only                | Search bar                            | -                                                     |
 | Move                       | ⚠️ Coming soon (API Only) | -                                     | `moveFile(path, newParentPath)` (Untested)            |
 | Edit files                 | ⚠️ Coming soon (API Only) | -                                     | `uploadFile(path, file, onProgress)` (Untested)       |
-| File icons/thumbnails      | ❌Coming soon             | -                                     | -                                                     |
+| File icons      | ❌Coming soon             | -                                     | -                                                     |
 | Delete non-empty folders   | ❌                        | -                                     | -                                                     |
 | Upload folders             | ❌                        | -                                     | -                                                     |
 | Download folders           | ❌                        | -                                     | -                                                     |
