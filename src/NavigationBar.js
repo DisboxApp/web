@@ -8,15 +8,18 @@ function NavigationBar() {
                 <Navbar.Brand as={Link} to="/"><b style={{ fontSize: "1.3rem" }}>Disbox</b></Navbar.Brand>
                 <Navbar.Collapse>
                     <Nav className="me-auto">
-                        <NavItem eventkey={1} href="/home">
+                        <NavItem href="/home">
                             <Nav.Link as={Link} to="/home" >Home</Nav.Link>
                         </NavItem>
-                        <NavItem eventkey={1} href="/setup">
-                            <Nav.Link as={Link} to="/setup" >Setup</Nav.Link>
+                        <NavItem href="/setup">
+                            <Nav.Link as={Link} to="/setup" >Setuap</Nav.Link>
                         </NavItem>
                     </Nav>
                     <Nav className="ml-auto">
-                        <NavItem eventkey={1} href="/setup">
+                        <NavItem href="https://github.com/DisboxApp/web">
+                            <Nav.Link href="https://github.com/DisboxApp/web" target="_blank" rel="noopener noreferrer">Source code</Nav.Link>
+                        </NavItem>
+                        <NavItem href="https://github.com/DisboxApp/web/issues">
                             <Nav.Link href="https://github.com/DisboxApp/web/issues" target="_blank" rel="noopener noreferrer">Report problems</Nav.Link>
                         </NavItem>
                     </Nav>

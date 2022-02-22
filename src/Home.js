@@ -30,7 +30,7 @@ function Home() {
       <Dialog open={showMobileDialog}>
         <DialogTitle>Warning</DialogTitle>
         <DialogContent>
-          Disbox is not currently not supported on mobile devices. Please use a desktop device.
+          Disbox is not currently not supported on mobile devices. Please use a desktop device instead.
         </DialogContent>
         <DialogActions>
           <MuiButton onClick={() => { setShowMobileDialog(false) }}>Continue anyway</MuiButton>

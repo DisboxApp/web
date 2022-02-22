@@ -1,8 +1,34 @@
 # Disbox Web Client
 
-This is the web client for the Disbox project.
+This is the web client for the Disbox project, currently hosted on https://disboxapp.github.io/web.
 
 Disbox is a cloud storage service that stores your files on discord. It bypasses the file size limit by splitting files into chunks, and wraps everything in a virtual file system.
+
+Using Discord allows for easy and secure logins, fast uploads and downloads, multiple drives, and easy access management.
+
+# Features
+
+| Feature                    | Support                  | UI                                    | JavaScript API                                        |
+|----------------------------|--------------------------|---------------------------------------|-------------------------------------------------------|
+| Login using Webhook URL    | ✅                        | Setup page                            | `new DisboxFileManager(webhookUrl)`                               |
+| Upload files               | ✅                        | "Upload file" button                  | `uploadFile(path, file, onProgress)`                  |
+| Create folders             | ✅                        | "New folder" button                   | `createDirectory(path)`                               |
+| Download files             | ✅                        | "Download" column                     | `downloadFile(path, fileSystemWritable, onProgress)`  |
+| Delete files/empty folders | ✅                        | "Delete" column                       | `deleteFile(path, onProgress)`                        |
+| Rename                     | ✅                        | Double-click name                     | `renameFile(path, newName)`                           |
+| Show folder                | ✅                        | Double-click row (except name column) | `getChildren(path)`                                   |
+| Sort & Filter              | ✅ UI Only                | Click column headers                  | -                                                     |
+| Search                     | ✅ UI Only                | Search bar                            | -                                                     |
+| Move                       | ⚠️ Coming soon (API Only) | -                                     | `moveFile(path, newParentPath)` (Untested)            |
+| Edit files                 | ⚠️ Coming soon (API Only) | -                                     | `uploadFile(path, file, onProgress)` (Untested)       |
+| File icons/thumbnails      | ❌Coming soon             | -                                     | -                                                     |
+| Delete non-empty folders   | ❌                        | -                                     | -                                                     |
+| Upload folders             | ❌                        | -                                     | -                                                     |
+| Download folders           | ❌                        | -                                     | -                                                     |
+
+...And more!
+
+Suggestions and contributions are welcome!
 
 # How it works
 
