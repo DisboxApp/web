@@ -20,9 +20,11 @@ Using Discord allows for easy and secure logins, fast uploads and downloads, mul
 | Sort              | ✅ UI Only                | Click column header                  | -                                                     |
 | Filter              | ✅ UI Only                | Click 3 dots on column headers                  | -                                                     |
 | Search                     | ✅ UI Only                | Search bar                            | -                                                     |
-| Move                       | ⚠️ Coming soon (API Only) | -                                     | `moveFile(path, newParentPath)` (Untested)            |
-| Edit files                 | ⚠️ Coming soon (API Only) | -                                     | `uploadFile(path, file, onProgress)` (Untested)       |
+| Move                       | ⚠️ Coming soon | -                                     | `moveFile(path, newParentPath)` (Untested)            |
+| Edit files                 | ⚠️ Coming soon | -                                     | `uploadFile(path, file, onProgress)` (Untested)       |
 | File icons      | ❌Coming soon             | -                                     | -                                                     |
+| Right-click menu      | ❌Coming soon (UI Only)   | -                                     | -                                                     |
+| Mobile      | ❌Coming soon (UI Only)   | -                                     | -                                                     |
 | Delete non-empty folders   | ❌                        | -                                     | -                                                     |
 | Upload folders             | ❌                        | -                                     | -                                                     |
 | Download folders           | ❌                        | -                                     | -                                                     |

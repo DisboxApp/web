@@ -12,7 +12,7 @@ function NavigationBar() {
                             <Nav.Link as={Link} to="/home" >Home</Nav.Link>
                         </NavItem>
                         <NavItem href="/setup">
-                            <Nav.Link as={Link} to="/setup" >Setuap</Nav.Link>
+                            <Nav.Link as={Link} to="/setup" >Setup</Nav.Link>
                         </NavItem>
                     </Nav>
                     <Nav className="ml-auto">
