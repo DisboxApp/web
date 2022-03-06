@@ -230,10 +230,11 @@ function App() {
 
     const getAvailableFileName = async (originalName) => {
         const extension = originalName.includes(".") ? originalName.split(".").pop() : "";
-        let name = originalName.includes(".") ? originalName.substring(0, originalName.lastIndexOf(".")) : originalName;
+        const baseName = originalName.includes(".") ? originalName.substring(0, originalName.lastIndexOf(".")) : originalName;
+        let name = baseName;
         let tryIndex = 1;
         while (await fileManager.getFile(`${path}${FILE_DELIMITER}${name}.${extension}`)) {
-            name = `${name} (${tryIndex})`;
+            name = `${baseName} (${tryIndex})`;
             tryIndex++;
         }
         return name + (extension ? `.${extension}` : "");
