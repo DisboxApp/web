@@ -215,6 +215,7 @@ function App() {
             updateRowById(params.id, changedFile);
         } catch (e) {
             alert(`Failed to rename file: ${e}`);
+            updateRowById(params.id, row);
             throw e;
         }
     }
@@ -231,8 +232,8 @@ function App() {
         const extension = originalName.includes(".") ? originalName.split(".").pop() : "";
         let name = originalName.includes(".") ? originalName.substring(0, originalName.lastIndexOf(".")) : originalName;
         let tryIndex = 1;
-        while (await fileManager.getFile(`${path}${FILE_DELIMITER}${name}`)) {
-            name = `${originalName} (${tryIndex})`;
+        while (await fileManager.getFile(`${path}${FILE_DELIMITER}${name}.${extension}`)) {
+            name = `${name} (${tryIndex})`;
             tryIndex++;
         }
         return name + (extension ? `.${extension}` : "");
