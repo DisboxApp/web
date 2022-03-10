@@ -47,7 +47,7 @@ function SearchBar({ fileManager, files = true, directories = true, rows,
 
 
     const setAutoCompleteOptions = (event, value) => {
-        const newOptions = [];
+        let newOptions = [];
         const parts = value.split(" ");
         const advancedParts = [];
         parts.forEach(part => {
@@ -75,6 +75,7 @@ function SearchBar({ fileManager, files = true, directories = true, rows,
             newOptions.unshift(parts.join(" "));
         }
         newOptions.push(...advancedOptions);
+        newOptions = [...new Set(newOptions)];
         setOptions(newOptions);
         onOptionsChanged(newOptions);
     }
