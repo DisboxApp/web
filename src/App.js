@@ -233,7 +233,7 @@ function App() {
         const baseName = originalName.includes(".") ? originalName.substring(0, originalName.lastIndexOf(".")) : originalName;
         let name = baseName;
         let tryIndex = 1;
-        while (await fileManager.getFile(`${path}${FILE_DELIMITER}${name}.${extension}`)) {
+        while (await fileManager.getFile(`${path}${FILE_DELIMITER}${name}${extension ? `.${extension}` : ""}`)) {
             name = `${baseName} (${tryIndex})`;
             tryIndex++;
         }
