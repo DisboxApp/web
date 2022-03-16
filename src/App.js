@@ -412,7 +412,7 @@ function App() {
                 <div>
                     <Button
                         disabled={currentAction !== "" || (params.row.type === "directory" &&
-                            fileManager.getFile(params.row.path) && Object.keys(fileManager.getChildren(params.row.path)).length > 0)}
+                            fileManager.getFile(params.row.path) !== null && Object.keys(fileManager.getChildren(params.row.path)).length > 0)}
                         variant="text"
                         color="error"
                         style={{ marginLeft: 16 }}
