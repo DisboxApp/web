@@ -366,7 +366,7 @@ class DisboxFileManager {
         const contentReferences = JSON.parse(file.content);
         await this.discordFileStorage.download(contentReferences, writeStream, onProgress, file.size);
 
-        if (onProgress) {
+        if (onProgress) { // Reconsider this
             onProgress(1, 1);
         }
     }

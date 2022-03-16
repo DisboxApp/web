@@ -259,7 +259,7 @@ function App() {
         } catch (e) {
             alert(`Failed to delete file: ${e}`);
             throw e;
-        }
+        } 
     }
 
 
@@ -411,7 +411,8 @@ function App() {
             renderCell: (params) => (
                 <div>
                     <Button
-                        disabled={currentAction !== "" || (params.row.type === "directory" && Object.keys(fileManager.getChildren(params.row.path)).length > 0)}
+                        disabled={currentAction !== "" || (params.row.type === "directory" &&
+                            fileManager.getFile(params.row.path) && Object.keys(fileManager.getChildren(params.row.path)).length > 0)}
                         variant="text"
                         color="error"
                         style={{ marginLeft: 16 }}
