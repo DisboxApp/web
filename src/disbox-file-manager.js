@@ -116,7 +116,7 @@ class DiscordFileStorage {
     async delete(messageIds, onProgress) {
         let chunksDeleted = 0;
         if (onProgress) {
-            onProgress(0, messageIds.length, false);
+            onProgress(0, messageIds.length);
         }
         for (let id of messageIds) {
             await fetch(`https://discordapp.com/api/webhooks/${this.id}/${this.token}/messages/${id}`, {
@@ -288,10 +288,15 @@ class DisboxFileManager {
         if (result.status !== 200) {
             throw new Error(`Error deleting file: ${result.status} ${result.statusText}`);
         }
-        await this.discordFileStorage.delete(JSON.parse(file.content), onProgress);
-        const parent = this.getParent(path);
-        delete parent.children[file.name];
-        return await result.json();
+        if (file.type === 'file' && file.content) {
+            await this.discordFileStorage.delete(JSON.parse(file.content), onProgress);
+            const parent = this.getParent(path);
+            delete parent.children[file.name];
+            return await result.json();
+        }
+        if (onProgress) {
+            onProgress(1, 1);
+        }
     }
 
     async createDirectory(path) {
@@ -343,6 +348,9 @@ class DisboxFileManager {
         const contentReferences = await this.discordFileStorage.upload(fileBlob, file.id, onProgress);
         await this.updateFile(file.path, { size: fileBlob.size, content: JSON.stringify(contentReferences) });
 
+        if (onProgress) {
+            onProgress(1, 1);
+        }
         return file;
     }
 
@@ -357,6 +365,10 @@ class DisboxFileManager {
 
         const contentReferences = JSON.parse(file.content);
         await this.discordFileStorage.download(contentReferences, writeStream, onProgress, file.size);
+
+        if (onProgress) {
+            onProgress(1, 1);
+        }
     }
 
 }

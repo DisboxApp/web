@@ -56,11 +56,11 @@ function PathParts(props) {
                 while (parent && "path" in parent) {
                     parts.push(<PathPart fileManager={props.fileManager} path={parent.path} name={parent.name} showDirectory={props.showDirectory} />);
                     parent = await props.fileManager.getParent(parent.path);
-                }    
+                }
             }
             parts.push(<PathPart fileManager={props.fileManager} path={""} name={"Storage"} showDirectory={props.showDirectory} />);
             setPartComponents(parts.reverse());
-            
+
         }
         f();
     }, [props.path]);
@@ -116,7 +116,7 @@ function App() {
 
     const [currentAction, setCurrentAction] = useState("");
     const [showProgress, setShowProgress] = useState(false);
-    const [progressValue, setProgressValue] = useState(0);
+    const [progressValue, setProgressValue] = useState(-1);
     const [showExtensionDialog, setShowExtensionDialog] = useState(false);
     const navigate = useNavigate();
 
@@ -130,14 +130,14 @@ function App() {
         } catch {
             setShowExtensionDialog(true);
         }
-        
+
         const webhookUrl = localStorage.getItem("webhookUrl");
         async function init() {
             if (webhookUrl) {
                 const manager = new DisboxFileManager(webhookUrl);
                 await manager.init();
                 setFileManager(manager);
-                setRows(Object.values(await manager.getChildren("")));
+                setRows(Object.values(manager.getChildren("")));
                 setPath("");
                 // setParent(null);
             }
@@ -146,16 +146,18 @@ function App() {
     }, []);
 
     useEffect(() => {
-        console.log("currentAction", currentAction);
-        if (currentAction === "") {
+        if (progressValue === 100 || progressValue === -1 ) {
             setTimeout(() => {
                 setShowProgress(false);
-                setProgressValue(0);
-            }, 3000);
+            }, 1500);
+            setTimeout(() => {
+                setProgressValue(-1);
+                setCurrentAction("");
+            }, 1600);
         } else {
             setShowProgress(true);
         }
-    }, [currentAction]);
+    }, [progressValue]);
 
 
     useEffect(() => {
@@ -198,7 +200,7 @@ function App() {
         setPath(path);
         const parent = await fileManager.getParent(path);
         // setParent(parent ? parent.path : null);
-        setRows(Object.values(await fileManager.getChildren(path)));
+        setRows(Object.values(fileManager.getChildren(path)));
     }
 
     const onCellEditCommit = async (params) => {
@@ -240,10 +242,10 @@ function App() {
         return name + (extension ? `.${extension}` : "");
     }
 
-    const onProgress = (value, total, bytes=true) => {
+    const onProgress = (value, total) => {
         const percentage = Math.round((value / total) * 100).toFixed(0);
         console.log(percentage);
-        setProgressValue(percentage);
+        setProgressValue(Number(percentage));
     }
 
     const onDeleteFileClick = async (params) => {
@@ -257,8 +259,6 @@ function App() {
         } catch (e) {
             alert(`Failed to delete file: ${e}`);
             throw e;
-        } finally {
-            setCurrentAction("");
         }
     }
 
@@ -279,7 +279,6 @@ function App() {
             alert(`Failed to upload file: ${e}`);
             throw e;
         } finally {
-            setCurrentAction("");
             params.target.value = null;
         }
     }
@@ -297,10 +296,10 @@ function App() {
                 let extension = `.${fileName.split(".").pop()}`;
                 const mimeType = mime.lookup(fileName) || 'application/octet-stream';
                 console.log(extension, mimeType);
-                // pickerConfig.types = [{
-                //     description: extension,
-                //     accept: {[mimeType]: [extension] }
-                // }]
+                pickerConfig.types = [{
+                    description: extension,
+                    accept: {[mimeType]: [extension] }
+                }]
             }
             const fileHandler = await window.showSaveFilePicker(pickerConfig);
             const writer = await fileHandler.createWritable();
@@ -309,10 +308,7 @@ function App() {
         } catch (e) {
             alert(`Failed to download file: ${e}`);
             throw e;
-        } finally {
-            setCurrentAction("");
-        }
-
+        } 
     }
 
     const onNewFolderClick = async (params) => {
@@ -392,7 +388,7 @@ function App() {
             renderCell: (params) => (
                 <div>
                     <Button
-                        disabled={params.row.type === "directory" || currentAction !== ""}
+                        disabled={currentAction !== "" || params.row.type === "directory"}
                         variant="text"
                         color="primary"
                         style={{ marginLeft: 16 }}
@@ -415,7 +411,7 @@ function App() {
             renderCell: (params) => (
                 <div>
                     <Button
-                        disabled={params.row.type === "directory"}
+                        disabled={currentAction !== "" || (params.row.type === "directory" && Object.keys(fileManager.getChildren(params.row.path)).length > 0)}
                         variant="text"
                         color="error"
                         style={{ marginLeft: 16 }}
@@ -448,7 +444,7 @@ function App() {
                         <Button variant="contained" onClick={() => {
                             setShowExtensionDialog(false);
                             window.open(EXTENSION_URL, "_blank").focus();
-                        } } >Install</Button>
+                        }} >Install</Button>
                     </DialogActions>
                 </Dialog>
 
@@ -458,15 +454,18 @@ function App() {
                     anchorOrigin={{ vertical: 'bottom', horizontal: 'right', }}
                     open={showProgress}
                 >
-                    <Box style={{ backgroundColor: "white", width: "500px", height: "35px" }}>
-                        <Box sx={{ display: 'flex', alignItems: 'center', marginTop:"4px"}}>
+                    <Box style={{ backgroundColor: "white", width: "500px", height: "60px" }}>
+                        <Box sx={{ width: '100%', mr: 1, ml: 1, mt: 1, mb: -0.5 }}>
+                            <Typography sx={{ color: "black" }} variant="body2" color="text.secondary">{currentAction}</Typography>
+                        </Box>
+                        <Box sx={{ display: 'flex', alignItems: 'center', marginTop: "4px" }}>
                             <Box sx={{ width: '100%', mr: 1, ml: 1 }}>
                                 <BorderLinearProgress variant="determinate" value={progressValue} />
                             </Box>
                             <Box sx={{ minWidth: 35 }}>
                                 <Typography sx={{ color: "black" }} variant="body2" color="text.secondary">{`${progressValue}%`}</Typography>
                             </Box>
-                            <IconButton size="small" aria-label="close" sx={{color:"black"}} onClick={() => {setShowProgress(false)}}>
+                            <IconButton size="small" aria-label="close" sx={{ color: "black" }} onClick={() => { setShowProgress(false) }}>
                                 <GridCloseIcon fontSize="small" />
                             </IconButton>
                         </Box>
