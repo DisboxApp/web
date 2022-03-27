@@ -90,7 +90,7 @@ class DiscordFileStorage {
         if (extensionResult !== null) {
             return await (await fetch(extensionResult)).blob();
         }
-        return await (await this.fetchfUrlFromProxy(url)).blob();
+        return await (await this.fetchUrlFromProxy(url)).blob();
     }
 
     async download(messageIds, writeStream, onProgress = null, fileSize=-1) {
