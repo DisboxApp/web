@@ -2,7 +2,7 @@
 import { sha256 } from 'js-sha256';
 
 
-const SERVER_URL = 'https://disboxserver.herokuapp.com';
+const SERVER_URL = 'https://disboxserver.azurewebsites.net';
 export const FILE_DELIMITER = '/';
 const FILE_CHUNK_SIZE = 8 * 1000 * 999 // Almost 8MB
 
