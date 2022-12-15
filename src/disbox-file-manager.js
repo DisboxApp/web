@@ -6,6 +6,9 @@ const SERVER_URL = 'https://disboxserver.azurewebsites.net';
 export const FILE_DELIMITER = '/';
 const FILE_CHUNK_SIZE = 8 * 1000 * 999 // Almost 8MB
 
+async function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
 
 async function* readFile(file, chunkSize) {
     var fileSize = file.size;
@@ -31,11 +34,10 @@ class DiscordFileStorage {
         const formData = new FormData();
         formData.append('payload_json', JSON.stringify({}));
         formData.append('file', blob, filename);
-        const result = await fetch(`https://discordapp.com/api/webhooks/${this.id}/${this.token}`, {
+        return await fetch(`https://discordapp.com/api/webhooks/${this.id}/${this.token}`, {
             method: 'POST',
             body: formData,
         });
-        return await result.json();
     }
 
     async getMessage(id) {
@@ -50,12 +52,21 @@ class DiscordFileStorage {
         const messageIds = [];
         let uploadedBytes = 0;
         let index = 0;
+        let waitForRateLimit = 0;
         if (onProgress) {
             onProgress(0, sourceFile.size);
         }
         for await (const chunk of readFile(sourceFile, FILE_CHUNK_SIZE)) {
+            await sleep(waitForRateLimit);
+            waitForRateLimit = 0;
+
             const result = await this.sendAttachment(`${namePrefix}_${index}`, new Blob([chunk]));
-            messageIds.push(result.id);
+            const headers = result.headers;           
+            if (headers.get('x-ratelimit-remaining') === '0') {
+                waitForRateLimit = headers.get('x-ratelimit-reset-after') * 1000;
+            }
+
+            messageIds.push((await result.json()).id);
             uploadedBytes += chunk.byteLength;
             index++;
             if (onProgress) {
