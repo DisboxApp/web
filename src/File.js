@@ -9,6 +9,7 @@ import { useState } from 'react';
 import {
      LinearProgress, linearProgressClasses, styled
 } from '@mui/material';
+import { Helmet } from "react-helmet";
 
 const BorderLinearProgress = styled(LinearProgress)(({ }) => ({
     height: 20,
@@ -52,6 +53,10 @@ function File() {
     
     return (searchParams.get("name") !== null && searchParams.get("attachmentUrls") !== null && searchParams.get("size") !== null) ? 
     (<div>
+        <Helmet>
+            <title> {searchParams.get("name")}</title>
+            <meta name="description" content="Shared from Disbox" />
+        </Helmet>
         <NavigationBar />
         <div className="App App-header" style={{ color: "black", }}>
             <div style={{ backgroundColor: "#FCFCFC", width: "66%", height: "90vh" }}>

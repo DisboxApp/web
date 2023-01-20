@@ -18,6 +18,7 @@
     "react-bootstrap": "^2.1.2",
     "react-dom": "^17.0.2",
     "react-file-icon": "^1.1.0",
+    "react-helmet": "^6.1.0",
     "react-icons": "^4.3.1",
     "react-native-mime-types": "^2.3.0",
     "react-router-dom": "^6.2.1",
