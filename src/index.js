@@ -4,6 +4,7 @@ import './index.css';
 import Home from './Home';
 import Setup from './Setup';
 import App from './App';
+import File from './File';
 import reportWebVitals from './reportWebVitals';
 import 'bootstrap/dist/css/bootstrap.css';
 import {
@@ -28,6 +29,7 @@ ReactDOM.render(
         <Route path="" element={<HomeOrApp />}/>
         <Route path="home" element={<Home />}/>
         <Route path="setup" element={<Setup />} />
+        <Route path="file" element={<File />} />
       </Routes>
     </BrowserRouter>
   </React.StrictMode>,

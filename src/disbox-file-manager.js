@@ -20,6 +20,51 @@ async function* readFile(file, chunkSize) {
     }
 }
 
+async function fetchUrlFromExtension(url) {
+    return new Promise((resolve, reject) => {
+        try {
+            chrome.runtime.sendMessage("jklpfhklkhbfgeencifbmkoiaokeieah", { message: {url: url } }, response => {
+                if (!response || !("data" in response)) {
+                    resolve(null);
+                }
+                resolve(response.data);
+
+            });
+        } catch {
+            resolve(null);
+        }
+    });
+}
+
+async function fetchUrlFromProxy(url) {
+    return await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`);  
+}
+
+async function fetchUrl(url) {
+    const extensionResult = await fetchUrlFromExtension(url);
+    if (extensionResult !== null) {
+        return await (await fetch(extensionResult)).blob();
+    }
+    return await (await fetchUrlFromProxy(url)).blob();
+}
+
+
+export async function downloadFromAttachmentUrls(attachmentUrls, writeStream, onProgress = null, fileSize=-1) {
+    let bytesDownloaded = 0;
+    if (onProgress) { 
+        onProgress (0, fileSize);
+    }
+    for (let attachmentUrl of attachmentUrls) {
+        const blob = await fetchUrl(attachmentUrl);
+        await writeStream.write(blob);
+        bytesDownloaded += blob.size;
+        if (onProgress) {
+            onProgress(bytesDownloaded, fileSize);
+        }
+    }
+
+    await writeStream.close();
+}
 
 class DiscordFileStorage {
     constructor(webhookUrl) {
@@ -46,6 +91,15 @@ class DiscordFileStorage {
         return json;
     }
 
+    async getAttachmentUrls(messageIds) {
+        const attachmentUrls = [];
+        for (let id of messageIds) {
+            const message = await this.getMessage(id);
+            attachmentUrls.push(message.attachments[0].url);
+        }
+        return attachmentUrls;
+    }
+
     async upload(sourceFile, namePrefix, onProgress = null) {
         const messageIds = [];
         let uploadedBytes = 0;
@@ -65,52 +119,10 @@ class DiscordFileStorage {
         return messageIds;
     }
 
-    async fetchUrlFromExtension(url) {
-        return new Promise((resolve, reject) => {
-            try {
-                chrome.runtime.sendMessage("jklpfhklkhbfgeencifbmkoiaokeieah", { message: {url: url } }, response => {
-                    if (!response || !("data" in response)) {
-                        resolve(null);
-                    }
-                    resolve(response.data);
-    
-                });
-            } catch {
-                resolve(null);
-            }
-        });
-    }
-
-    async fetchUrlFromProxy(url) {
-        return await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`);  
-    }
-
-    async fetchUrl(url) {
-        const extensionResult = await this.fetchUrlFromExtension(url);
-        if (extensionResult !== null) {
-            return await (await fetch(extensionResult)).blob();
-        }
-        return await (await this.fetchUrlFromProxy(url)).blob();
-    }
 
     async download(messageIds, writeStream, onProgress = null, fileSize=-1) {
-        let bytesDownloaded = 0;
-        if (onProgress) { 
-            onProgress (0, fileSize);
-        }
-        for (let id of messageIds) {
-            const message = await this.getMessage(id);
-            const attachment = message.attachments[0];
-
-            const blob = await this.fetchUrl(attachment.url);
-            await writeStream.write(blob);
-            bytesDownloaded += blob.size;
-            if (onProgress) {
-                onProgress(bytesDownloaded, fileSize);
-            }
-        }
-
-        await writeStream.close();
+        const attachmentUrls = await this.getAttachmentUrls(messageIds);
+        await downloadFromAttachmentUrls(attachmentUrls, writeStream, onProgress, fileSize);
     }
 
     async delete(messageIds, onProgress) {
@@ -128,9 +140,7 @@ class DiscordFileStorage {
             }
         } 
     }
-
 }
-
 
 
 class DisboxFileManager {
@@ -369,6 +379,19 @@ class DisboxFileManager {
         if (onProgress) { // Reconsider this
             onProgress(1, 1);
         }
+    }
+
+    async getAttachmentUrls(path) {
+        const file = this.getFile(path);
+        if (!file) {
+            throw new Error(`File not found: ${path}`);
+        }
+        if (file.type === 'directory') {
+            throw new Error(`Cannot share directory: ${path}`);
+        }
+
+        const contentReferences = JSON.parse(file.content);
+        return await this.discordFileStorage.getAttachmentUrls(contentReferences);
     }
 
 }

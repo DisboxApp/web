@@ -2,19 +2,21 @@
 import { DataGrid, GridCloseIcon } from '@mui/x-data-grid';
 import './App.css';
 import DisboxFileManager, { FILE_DELIMITER } from "./disbox-file-manager";
+import { pickLocationAsWritable } from "./file-picker.js";
+import formatSize from './format-size';
 import React, { useEffect, useState } from 'react';
 import NavigationBar from './NavigationBar';
 import ThemeSwitch from './ThemeSwitch';
 import { ThemeProvider, createTheme, styled } from '@mui/material/styles';
 import {
     CssBaseline, Button, Tooltip, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions,
-    Snackbar, IconButton, LinearProgress, linearProgressClasses, Alert, Typography
+    Snackbar, IconButton, LinearProgress, linearProgressClasses, Typography
 } from '@mui/material';
 import { Button as BsButton } from 'react-bootstrap';
 import SearchBar from './SearchBar';
 import { useNavigate } from 'react-router-dom';
 import { Box } from '@mui/system';
-import * as mime from 'react-native-mime-types';
+import urlJoin from 'url-join';
 
 const EXTENSION_URL = "https://chrome.google.com/webstore/detail/disboxdownloader/jklpfhklkhbfgeencifbmkoiaokeieah";
 
@@ -85,19 +87,6 @@ const BorderLinearProgress = styled(LinearProgress)(({ theme }) => ({
         backgroundColor: theme.palette.mode === 'light' ? '#1a90ff' : '#308fe8',
     },
 }));
-
-function formatSize(bytes, decimals = 1) {
-    if (bytes === 0) return '0 Bytes';
-    if (!bytes) return '';
-
-    const k = 1024;
-    const dm = decimals < 0 ? 0 : decimals;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
-
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
-}
 
 function formatDateString(dateString) {
     let date = new Date(dateString);
@@ -289,26 +278,37 @@ function App() {
         }
         try {
             const fileName = params.row.name;
-            let pickerConfig = {
-                suggestedName: fileName
-            }
-            if (fileName.includes(".")) {
-                let extension = `.${fileName.split(".").pop()}`;
-                const mimeType = mime.lookup(fileName) || 'application/octet-stream';
-                console.log(extension, mimeType);
-                pickerConfig.types = [{
-                    description: extension,
-                    accept: {[mimeType]: [extension] }
-                }]
-            }
-            const fileHandler = await window.showSaveFilePicker(pickerConfig);
-            const writer = await fileHandler.createWritable();
-            setCurrentAction(`Downloading ${params.row.name}`);
-            await fileManager.downloadFile(params.row.path, writer, onProgress);
+            const writable = await pickLocationAsWritable(fileName);
+            setCurrentAction(`Downloading ${fileName}`);
+            await fileManager.downloadFile(params.row.path, writable, onProgress);
         } catch (e) {
             alert(`Failed to download file: ${e}`);
             throw e;
         } 
+    }
+
+    const onShareFileClick = async (params) => {
+        if (currentAction) {
+            return;
+        }
+        if (!window.confirm("Sharing this file will create a permanent link to it. Anyone with the link will be able to download the file. Are you sure you want to share this file?")) {
+            return;
+        }
+        try {
+            const fileName = params.row.name;
+            const attachmentUrls = await fileManager.getAttachmentUrls(params.row.path);
+            const base64AttachmentUrls = btoa(JSON.stringify(attachmentUrls)).replace(/\+/g, '~').replace(/\//g, '_').replace(/=/g, '-');
+
+            const shareUrl = encodeURI(urlJoin(window.location.href, `/file/?name=${fileName}&attachmentUrls=${base64AttachmentUrls}&size=${params.row.size}`));
+            await navigator.share({
+                title: fileName,
+                url: shareUrl
+            });
+            // alert("File shared successfully. The link has been copied to your clipboard.");
+        } catch (e) {
+            alert(`Failed to share file: ${e}`);
+            throw e;
+        }
     }
 
     const onNewFolderClick = async (params) => {
@@ -375,13 +375,13 @@ function App() {
         {
             field: 'path',
             headerName: 'Path',
-            width: 500,
+            width: 480,
             // hide: path !== null, // Deprecated
         },
         {
-            field: 'download',
-            headerName: 'Download',
-            width: 130,
+            field: 'share',
+            headerName: 'Share',
+            width: 85,
             style: {
                 fontSize: '2rem',
             },
@@ -391,7 +391,28 @@ function App() {
                         disabled={currentAction !== "" || params.row.type === "directory"}
                         variant="text"
                         color="primary"
-                        style={{ marginLeft: 16 }}
+                        onClick={async () => {
+                            onShareFileClick(params);
+                        }}
+                    >
+                        Share
+                    </Button>
+                </div>
+            ),
+        },
+        {
+            field: 'download',
+            headerName: 'Download',
+            width: 120,
+            style: {
+                fontSize: '2rem',
+            },
+            renderCell: (params) => (
+                <div>
+                    <Button
+                        disabled={currentAction !== "" || params.row.type === "directory"}
+                        variant="text"
+                        color="primary"
                         onClick={async () => {
                             onDownloadFileClick(params);
                         }}
@@ -404,7 +425,7 @@ function App() {
         {
             field: 'delete',
             headerName: 'Delete',
-            width: 100,
+            width: 85,
             style: {
                 fontSize: '2rem',
             },
@@ -415,7 +436,6 @@ function App() {
                             fileManager.getFile(params.row.path) !== null && Object.keys(fileManager.getChildren(params.row.path)).length > 0)}
                         variant="text"
                         color="error"
-                        style={{ marginLeft: 16 }}
                         onClick={async () => {
                             onDeleteFileClick(params);
                         }}
