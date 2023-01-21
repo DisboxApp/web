@@ -16,6 +16,7 @@ Using Discord allows for easy and secure logins, fast uploads and downloads, mul
 | Upload files               | ✅                        | "Upload file" button                  | `uploadFile(path, file, onProgress)`                  |
 | Create folders             | ✅                        | "New folder" button                   | `createDirectory(path)`                               |
 | Download files             | ✅                        | "Download" column                     | `downloadFile(path, fileSystemWritable, onProgress)`  |
+| Share files             | ✅                        | "Share" column                     | `getAttachmentUrls(path)`  |
 | Delete files/empty folders | ✅                        | "Delete" column                       | `deleteFile(path, onProgress)`                        |
 | Rename                     | ✅                        | Double-click name column             | `renameFile(path, newName)`                           |
 | Show folder                | ✅                        | Double-click row (except name column) | `getChildren(path)`                                   |
