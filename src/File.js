@@ -1,15 +1,12 @@
+import { LinearProgress, linearProgressClasses, styled } from '@mui/material';
+import { useState } from 'react';
+import { Button } from "react-bootstrap";
+import { Helmet } from "react-helmet";
+import { useSearchParams } from "react-router-dom";
 import './App.css';
 import { downloadFromAttachmentUrls } from "./disbox-file-manager";
-import { pickLocationAsWritable } from "./file-picker.js";
+import { formatSize, pickLocationAsWritable } from "./file-utils.js";
 import NavigationBar from './NavigationBar';
-import { useSearchParams } from "react-router-dom";
-import { Button } from "react-bootstrap";
-import formatSize from './format-size';
-import { useState } from 'react';
-import {
-     LinearProgress, linearProgressClasses, styled
-} from '@mui/material';
-import { Helmet } from "react-helmet";
 
 const BorderLinearProgress = styled(LinearProgress)(({ }) => ({
     height: 20,

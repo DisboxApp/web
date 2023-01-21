@@ -1,17 +1,15 @@
+import 'bootstrap/dist/css/bootstrap.css';
 import React from 'react';
 import ReactDOM from 'react-dom';
-import './index.css';
-import Home from './Home';
-import Setup from './Setup';
+import {
+  BrowserRouter, Route, Routes
+} from "react-router-dom";
 import App from './App';
 import File from './File';
+import Home from './Home';
+import './index.css';
 import reportWebVitals from './reportWebVitals';
-import 'bootstrap/dist/css/bootstrap.css';
-import {
-  BrowserRouter,
-  Routes,
-  Route
-} from "react-router-dom";
+import Setup from './Setup';
 
 function HomeOrApp() {
   if (localStorage.getItem("webhookUrl") === null) {

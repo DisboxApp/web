@@ -1,7 +1,7 @@
-import './App.css';
-import { Form, Button } from "react-bootstrap";
-import NavigationBar from './NavigationBar';
+import { Button, Form } from "react-bootstrap";
 import { useNavigate } from 'react-router-dom';
+import './App.css';
+import NavigationBar from './NavigationBar';
 
 function Setup() {
     const navigate = useNavigate();

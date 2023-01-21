@@ -1,22 +1,20 @@
 /*global chrome*/
-import { DataGrid, GridCloseIcon } from '@mui/x-data-grid';
-import './App.css';
-import DisboxFileManager, { FILE_DELIMITER } from "./disbox-file-manager";
-import { pickLocationAsWritable } from "./file-picker.js";
-import formatSize from './format-size';
 import React, { useEffect, useState } from 'react';
-import NavigationBar from './NavigationBar';
-import ThemeSwitch from './ThemeSwitch';
-import { ThemeProvider, createTheme, styled } from '@mui/material/styles';
-import {
-    CssBaseline, Button, Tooltip, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions,
-    Snackbar, IconButton, LinearProgress, linearProgressClasses, Typography
-} from '@mui/material';
-import { Button as BsButton } from 'react-bootstrap';
-import SearchBar from './SearchBar';
-import { useNavigate } from 'react-router-dom';
+
+import { Button, CssBaseline, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, IconButton, LinearProgress, linearProgressClasses, Snackbar, Tooltip, Typography } from '@mui/material';
+import { createTheme, styled, ThemeProvider } from '@mui/material/styles';
 import { Box } from '@mui/system';
+import { DataGrid, GridCloseIcon } from '@mui/x-data-grid';
+import { Button as BsButton } from 'react-bootstrap';
 import urlJoin from 'url-join';
+import './App.css';
+import buildColumns from './columns';
+import DisboxFileManager, { FILE_DELIMITER } from "./disbox-file-manager";
+import { getAvailableFileName, pickLocationAsWritable } from "./file-utils.js";
+import NavigationBar from './NavigationBar';
+import PathParts from './PathParts';
+import SearchBar from './SearchBar';
+import ThemeSwitch from './ThemeSwitch';
 
 const EXTENSION_URL = "https://chrome.google.com/webstore/detail/disboxdownloader/jklpfhklkhbfgeencifbmkoiaokeieah";
 
@@ -34,47 +32,6 @@ const lightTheme = createTheme({
     }
 });
 
-function PathPart(props) {
-    return <div>
-        <Button onClick={() => props.showDirectory(props.path)}>{`${props.name} >`}</Button>
-    </div>
-}
-
-function PathParts(props) {
-    const [partComponents, setPartComponents] = useState([]);
-
-    useEffect(() => {
-        async function f() {
-            if (!props.fileManager) {
-                return;
-            }
-            const parts = [];
-            if (props.path !== null) {
-                if (props.path !== "") {
-                    parts.push(<PathPart fileManager={props.fileManager} path={props.path}
-                        name={await props.fileManager.getFile(props.path).name} showDirectory={props.showDirectory} />);
-                }
-                let parent = await props.fileManager.getParent(props.path);
-                while (parent && "path" in parent) {
-                    parts.push(<PathPart fileManager={props.fileManager} path={parent.path} name={parent.name} showDirectory={props.showDirectory} />);
-                    parent = await props.fileManager.getParent(parent.path);
-                }
-            }
-            parts.push(<PathPart fileManager={props.fileManager} path={""} name={"Storage"} showDirectory={props.showDirectory} />);
-            setPartComponents(parts.reverse());
-
-        }
-        f();
-    }, [props.path]);
-
-    return <div style={{ display: "flex" }}>
-        {partComponents.map((component, index) => (
-            <React.Fragment key={index}>
-                {component}
-            </React.Fragment>
-        ))}
-    </div>
-}
 
 const BorderLinearProgress = styled(LinearProgress)(({ theme }) => ({
     height: 10,
@@ -88,10 +45,7 @@ const BorderLinearProgress = styled(LinearProgress)(({ theme }) => ({
     },
 }));
 
-function formatDateString(dateString) {
-    let date = new Date(dateString);
-    return date.toLocaleString();
-}
+
 
 function App() {
     const [fileManager, setFileManager] = useState(null);
@@ -107,7 +61,7 @@ function App() {
     const [showProgress, setShowProgress] = useState(false);
     const [progressValue, setProgressValue] = useState(-1);
     const [showExtensionDialog, setShowExtensionDialog] = useState(false);
-    const navigate = useNavigate();
+
 
     useEffect(() => {
         try {
@@ -134,6 +88,7 @@ function App() {
         init();
     }, []);
 
+
     useEffect(() => {
         if (progressValue === 100 || progressValue === -1 ) {
             setTimeout(() => {
@@ -158,6 +113,7 @@ function App() {
         return rows.find(row => row.id === id);
     }
 
+
     // Needed because we don't have the pro version of the data grid
     const updateRowById = (id, row) => {
         const newRows = [];
@@ -171,6 +127,7 @@ function App() {
         setRows(newRows);
     }
 
+
     const deleteRowById = (id) => {
         const newRows = [];
         rows.forEach(r => {
@@ -181,9 +138,11 @@ function App() {
         setRows(newRows);
     }
 
+
     const addRow = (row) => {
         setRows([...rows, row]);
     }
+
 
     const showDirectory = async (path) => {
         setPath(path);
@@ -191,6 +150,13 @@ function App() {
         // setParent(parent ? parent.path : null);
         setRows(Object.values(fileManager.getChildren(path)));
     }
+    
+    const onProgress = (value, total) => {
+        const percentage = Math.round((value / total) * 100).toFixed(0);
+        console.log(percentage);
+        setProgressValue(Number(percentage));
+    }
+
 
     const onCellEditCommit = async (params) => {
         if (params.field !== "name") {
@@ -211,31 +177,16 @@ function App() {
         }
     }
 
+
     const onCellDoubleClick = async (params) => {
         if (params.field === "name") {
             return;
         }
-        await showDirectory(params.row.path);
-    }
-
-
-    const getAvailableFileName = async (originalName) => {
-        const extension = originalName.includes(".") ? originalName.split(".").pop() : "";
-        const baseName = originalName.includes(".") ? originalName.substring(0, originalName.lastIndexOf(".")) : originalName;
-        let name = baseName;
-        let tryIndex = 1;
-        while (await fileManager.getFile(`${path}${FILE_DELIMITER}${name}${extension ? `.${extension}` : ""}`)) {
-            name = `${baseName} (${tryIndex})`;
-            tryIndex++;
+        if (params.row.type === "directory") {
+            await showDirectory(params.row.path);
         }
-        return name + (extension ? `.${extension}` : "");
     }
 
-    const onProgress = (value, total) => {
-        const percentage = Math.round((value / total) * 100).toFixed(0);
-        console.log(percentage);
-        setProgressValue(Number(percentage));
-    }
 
     const onDeleteFileClick = async (params) => {
         if (currentAction) {
@@ -257,7 +208,7 @@ function App() {
             return;
         }
         const file = params.target.files[0];
-        const fileName = await getAvailableFileName(file.name);
+        const fileName = await getAvailableFileName(fileManager, path, file.name);
         setCurrentAction(`Uploading ${fileName}`);
         const filePath = `${path}${FILE_DELIMITER}${fileName}`;
         try {
@@ -271,6 +222,7 @@ function App() {
             params.target.value = null;
         }
     }
+
 
     const onDownloadFileClick = async (params) => {
         if (currentAction) {
@@ -286,6 +238,7 @@ function App() {
             throw e;
         } 
     }
+
 
     const onShareFileClick = async (params) => {
         if (currentAction) {
@@ -311,9 +264,10 @@ function App() {
         }
     }
 
+
     const onNewFolderClick = async (params) => {
         try {
-            const folderName = await getAvailableFileName("New Folder");
+            const folderName = await getAvailableFileName(fileManager, path, "New Folder");
             const folderPath = `${path}${FILE_DELIMITER}${folderName}`;
             await fileManager.createDirectory(folderPath); // TODO: Maybe change folder to directory
             const row = fileManager.getFile(folderPath);
@@ -341,112 +295,6 @@ function App() {
         }
     }
 
-
-
-    const columns = [
-        // { field: 'id', headerName: 'ID', width: 90 },
-        {
-            field: 'name',
-            headerName: 'Name',
-            width: 500,
-            editable: true,
-        },
-        {
-            field: 'created_at',
-            headerName: 'Created at',
-            type: 'date',
-            width: 200,
-            valueFormatter: (params) => formatDateString(params.value),
-        },
-        {
-            field: 'updated_at',
-            headerName: 'Updated at',
-            type: 'date',
-            width: 200,
-            valueFormatter: (params) => formatDateString(params.value),
-        },
-        {
-            field: 'size',
-            headerName: 'Size',
-            // type: 'number',
-            width: 150,
-            valueFormatter: (params) => formatSize(params.value),
-        },
-        {
-            field: 'path',
-            headerName: 'Path',
-            width: 480,
-            // hide: path !== null, // Deprecated
-        },
-        {
-            field: 'share',
-            headerName: 'Share',
-            width: 85,
-            style: {
-                fontSize: '2rem',
-            },
-            renderCell: (params) => (
-                <div>
-                    <Button
-                        disabled={currentAction !== "" || params.row.type === "directory"}
-                        variant="text"
-                        color="primary"
-                        onClick={async () => {
-                            onShareFileClick(params);
-                        }}
-                    >
-                        Share
-                    </Button>
-                </div>
-            ),
-        },
-        {
-            field: 'download',
-            headerName: 'Download',
-            width: 120,
-            style: {
-                fontSize: '2rem',
-            },
-            renderCell: (params) => (
-                <div>
-                    <Button
-                        disabled={currentAction !== "" || params.row.type === "directory"}
-                        variant="text"
-                        color="primary"
-                        onClick={async () => {
-                            onDownloadFileClick(params);
-                        }}
-                    >
-                        Download
-                    </Button>
-                </div>
-            ),
-        },
-        {
-            field: 'delete',
-            headerName: 'Delete',
-            width: 85,
-            style: {
-                fontSize: '2rem',
-            },
-            renderCell: (params) => (
-                <div>
-                    <Button
-                        disabled={currentAction !== "" || (params.row.type === "directory" &&
-                            fileManager.getFile(params.row.path) !== null && Object.keys(fileManager.getChildren(params.row.path)).length > 0)}
-                        variant="text"
-                        color="error"
-                        onClick={async () => {
-                            onDeleteFileClick(params);
-                        }}
-                    >
-                        Delete
-                    </Button>
-                </div>
-            ),
-        }
-    ];
-
     return (
         <div style={{ height: "87vh" }}>
             <NavigationBar />
@@ -470,8 +318,7 @@ function App() {
                 </Dialog>
 
                 <Snackbar
-                    // onClose={handleClose}
-                    message="Notea archived"
+                    message=""
                     anchorOrigin={{ vertical: 'bottom', horizontal: 'right', }}
                     open={showProgress}
                 >
@@ -530,9 +377,7 @@ function App() {
                             }}
                             style={{ border: "0px" }}
                             rows={rows}
-                            columns={columns}
-                            // pageSize={5}
-                            // rowsPerPageOptions={[5]}
+                            columns={buildColumns(fileManager, currentAction, onShareFileClick, onDownloadFileClick, onDeleteFileClick)}
                             hideFooter={true}
                             checkboxSelection
                             disableSelectionOnClick
