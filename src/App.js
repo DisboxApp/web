@@ -77,8 +77,7 @@ function App() {
         const webhookUrl = localStorage.getItem("webhookUrl");
         async function init() {
             if (webhookUrl) {
-                const manager = new DisboxFileManager(webhookUrl);
-                await manager.init();
+                const manager = await DisboxFileManager.create(webhookUrl);
                 setFileManager(manager);
                 setRows(Object.values(manager.getChildren("")));
                 setPath("");

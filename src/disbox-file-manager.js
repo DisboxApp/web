@@ -1,7 +1,6 @@
 /*global chrome*/
 import { sha256 } from 'js-sha256';
 
-
 const SERVER_URL = 'https://disboxserver.azurewebsites.net';
 export const FILE_DELIMITER = '/';
 const FILE_CHUNK_SIZE = 8 * 1000 * 999 // Almost 8MB
@@ -138,25 +137,40 @@ class DiscordFileStorage {
             if (onProgress) {
                 onProgress(chunksDeleted, messageIds.length);
             }
-        } 
+        }
     }
 }
 
 
 class DisboxFileManager {
-    constructor(userToken) {
-        this.discordFileStorage = new DiscordFileStorage(userToken);
-        this.userId = sha256(userToken);
-    }
+    static async create(webhookUrl) {
+        const url = new URL(webhookUrl);
+        let fileTrees = {};
 
-    async init() {
-        const result = await fetch(`${SERVER_URL}/files/get/${this.userId}`)
-        if (result.status !== 200) {
+        // Handle Discord changing webhook URLs
+        for (const hostname of ["discord.com", "discordapp.com"]) {
+            url.hostname = hostname;
+            const result = await fetch(`${SERVER_URL}/files/get/${sha256(url.href)}`);
+            if (result.status === 200) {
+                fileTrees[url.href] = await result.json();
+            }
+        }
+        if (fileTrees.length === 0) {
             throw new Error(`Failed to get files for user.`);
         }
-        const json = await result.json();
-        this.fileTree = json;
+
+        // If one of them has entries, choose it no matter what the entered URL was.
+        const [chosenUrl, fileTree] = Object.entries(fileTrees).sort((f1, f2) => f2[1].length - f1[1].length)[0];
+
+        return new this(sha256(chosenUrl), new DiscordFileStorage(webhookUrl), fileTree);
     }
+
+    constructor(userId, storage, fileTree) {
+        this.userId = userId;
+        this.discordFileStorage = storage;
+        this.fileTree = fileTree;
+    }
+
 
     getFile(path, copy = true) {
         let file = this.fileTree;
