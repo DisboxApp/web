@@ -252,10 +252,16 @@ function App() {
             const base64AttachmentUrls = btoa(JSON.stringify(attachmentUrls)).replace(/\+/g, '~').replace(/\//g, '_').replace(/=/g, '-');
 
             const shareUrl = encodeURI(urlJoin(window.location.href, `/file/?name=${fileName}&attachmentUrls=${base64AttachmentUrls}&size=${params.row.size}`));
-            await navigator.share({
-                title: fileName,
-                url: shareUrl
-            });
+            if (navigator.share) {
+                await navigator.share({
+                    title: fileName,
+                    url: shareUrl
+                });
+            } else {
+                navigator.clipboard.writeText(shareUrl);
+                alert("File shared successfully. A link to it has been copied to your clipboard.");
+            }
+
             // alert("File shared successfully. The link has been copied to your clipboard.");
         } catch (e) {
             alert(`Failed to share file: ${e}`);
