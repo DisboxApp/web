@@ -42,3 +42,24 @@
     transform: rotate(360deg);
   }
 }
+
+.no-width {
+  width: 0 !important;
+  min-width: 0 !important;
+  padding: 0 !important;
+}
+
+.extra-width {
+  width: 500px !important;
+  max-width: 500px !important;
+}
+
+.no-seperator .MuiDataGrid-columnSeparator--sideRight {
+  display: none !important;
+}
+
+.icon-cell {
+  min-width: 30px !important;
+  width: 30px !important;
+  justify-content: center !important;
+}

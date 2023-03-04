@@ -1,5 +1,6 @@
 import { Button } from '@mui/material';
-import { formatSize } from './file-utils';
+import { formatSize, getMimeType } from './file-utils';
+import FileIcon from './FileIcon';
 
 function formatDateString(dateString) {
     let date = new Date(dateString);
@@ -10,10 +11,23 @@ export default function buildColumns(fileManager, currentAction, onShareClick, o
     return [
         // { field: 'id', headerName: 'ID', width: 90 },
         {
+            field: 'type',
+            headerName: '',
+            width: 0,
+            renderCell: (params) => (
+                <FileIcon mimeType={params.row.type === "directory" ? "inode/directory" : getMimeType(params.row.name)} />
+            ),
+            disableColumnMenu: true,
+            sortable: false,
+            headerClassName: 'no-width no-seperator',
+            cellClassName: 'icon-cell'
+        },
+        {
             field: 'name',
             headerName: 'Name',
-            width: 500,
+            width: 470,
             editable: true,
+            headerClassName: 'extra-width',
         },
         {
             field: 'created_at',
@@ -39,7 +53,7 @@ export default function buildColumns(fileManager, currentAction, onShareClick, o
         {
             field: 'path',
             headerName: 'Path',
-            width: 480,
+            width: 490,
             // hide: path !== null, // Deprecated
         },
         {

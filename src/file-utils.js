@@ -1,13 +1,17 @@
 import * as mime from 'react-native-mime-types';
 import { FILE_DELIMITER } from "./disbox-file-manager";
 
+export function getMimeType(name) {
+    return mime.lookup(name) || 'application/octet-stream';
+}
+
 export async function pickLocationAsWritable(suggestedName) {
     let pickerConfig = {
         suggestedName: suggestedName
     }
     if (suggestedName.includes(".")) {
         let extension = `.${suggestedName.split(".").pop()}`;
-        const mimeType = mime.lookup(suggestedName) || 'application/octet-stream';
+        const mimeType = getMimeType(suggestedName);
         console.log(extension, mimeType);
         pickerConfig.types = [{
             description: extension,
@@ -15,7 +19,7 @@ export async function pickLocationAsWritable(suggestedName) {
         }]
     }
     const fileHandler = await window.showSaveFilePicker(pickerConfig);
-    return await fileHandler.createWritable();
+    return await (await fileHandler.createWritable()).getWriter();
 }
 
 export function formatSize(bytes, decimals = 1) {
