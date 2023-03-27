@@ -191,7 +191,7 @@ function App() {
         if (currentAction) {
             return;
         }
-        if (!window.confirm(`Are you sure you want to delete ${params.row.name}?`)) {
+        if (params.row.type !== "directory" && !window.confirm(`Are you sure you want to delete ${params.row.name}?`)) {
             return;
         }
         try {
