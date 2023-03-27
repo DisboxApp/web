@@ -191,6 +191,9 @@ function App() {
         if (currentAction) {
             return;
         }
+        if (!window.confirm(`Are you sure you want to delete ${params.row.name}?`)) {
+            return;
+        }
         try {
             setCurrentAction(`Deleting ${params.row.name}`);
             await fileManager.deleteFile(params.row.path, onProgress);
