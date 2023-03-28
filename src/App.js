@@ -103,11 +103,6 @@ function App() {
     }, [progressValue]);
 
 
-    useEffect(() => {
-        console.log(rows);
-    }, [rows]);
-
-
     const getRowById = (id) => {
         return rows.find(row => row.id === id);
     }
@@ -152,7 +147,6 @@ function App() {
     
     const onProgress = (value, total) => {
         const percentage = Math.round((value / total) * 100).toFixed(0);
-        console.log(percentage);
         setProgressValue(Number(percentage));
     }
 

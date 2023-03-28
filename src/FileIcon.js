@@ -31,7 +31,6 @@ var ICON_STRINGS = {
 function getIconString(mimeType) {
     for (let key in ICON_STRINGS) {
         if (mimeType.startsWith(key)) {
-            console.log(key, ICON_STRINGS[key])
             return ICON_STRINGS[key];
         }
     }

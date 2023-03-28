@@ -12,7 +12,6 @@ export async function pickLocationAsWritable(suggestedName) {
     if (suggestedName.includes(".")) {
         let extension = `.${suggestedName.split(".").pop()}`;
         const mimeType = getMimeType(suggestedName);
-        console.log(extension, mimeType);
         pickerConfig.types = [{
             description: extension,
             accept: {[mimeType]: [extension] }
