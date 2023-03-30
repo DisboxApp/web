@@ -5,6 +5,9 @@ const SERVER_URL = 'https://disboxserver.azurewebsites.net';
 export const FILE_DELIMITER = '/';
 const FILE_CHUNK_SIZE = 8 * 1000 * 999 // Almost 8MB
 
+async function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
 
 async function* readFile(file, chunkSize) {
     var fileSize = file.size;
@@ -65,35 +68,81 @@ export async function downloadFromAttachmentUrls(attachmentUrls, writeStream, on
     await writeStream.close();
 }
 
-class DiscordFileStorage {
+class DiscordWebhookClient {
     constructor(webhookUrl) {
-        this.id = webhookUrl.split('/').slice(0, -1).pop();
-        this.token = webhookUrl.split('/').pop();
+        const id = webhookUrl.split('/').slice(0, -1).pop();
+        const token = webhookUrl.split('/').pop();
+        this.baseUrl = `https://discordapp.com/api/webhooks/${id}/${token}`;
+        this.rateLimitWaits = {};
+    }
+
+    async fetchFromApi(path, {type, method, body}) {
+        if (this.rateLimitWaits[type] > 0) {
+            console.log(`Waiting ${this.rateLimitWaits[type]}ms for rate limit to reset`)
+            await sleep(this.rateLimitWaits[type]);
+        }
+        const response = await fetch(`${this.baseUrl}${path}`, {
+            method: method,
+            body: body,
+        });
+        const headers = response.headers;
+        const remainingRequests = Number(headers.get("X-RateLimit-Remaining"));
+        const resetAfter = Number(headers.get("X-RateLimit-Reset-After"));
+        this.rateLimitWaits[type] = remainingRequests === 0 ? resetAfter * 1000 : 0;
+
+        const status = response.status;
+        if (status === 429) {
+            const responseJson = await response.json();
+            const retryAfter = responseJson.retry_after;
+            this.rateLimitWaits[type] = (retryAfter) * 1000;
+            console.log("Rate limit exceeded, retrying");
+            return await this.fetchFromApi(path, {method, body, type});
+        }
+        if (status >= 400) {
+            throw new Error(`Failed to ${type} with status ${status}: ${await response.text()}`);
+        }
+        return response;
     }
 
     async sendAttachment(filename, blob) {
         const formData = new FormData();
         formData.append('payload_json', JSON.stringify({}));
         formData.append('file', blob, filename);
-        const result = await fetch(`https://discordapp.com/api/webhooks/${this.id}/${this.token}`, {
+        const response = await this.fetchFromApi("?wait=true", {
+            type: "sendAttachment",
             method: 'POST',
             body: formData,
         });
-        return await result.json();
+        return await response.json();
     }
 
     async getMessage(id) {
-        const result = await fetch(`https://discordapp.com/api/webhooks/${this.id}/${this.token}/messages/${id}`, {
+        const response = await this.fetchFromApi(`/messages/${id}`, {
+            type: "getMessage",
             method: 'GET',
         });
-        const json = await result.json();
-        return json;
+        return await response.json();
     }
+
+    async deleteMessage(id) {
+        await this.fetchFromApi(`/messages/${id}`, {
+            type: "deleteMessage",
+            method: 'DELETE',
+        });
+    }
+
+}
+
+class DiscordFileStorage {
+    constructor(webhookUrl) {
+        this.webhookClient = new DiscordWebhookClient(webhookUrl);
+    }
+
 
     async getAttachmentUrls(messageIds) {
         const attachmentUrls = [];
         for (let id of messageIds) {
-            const message = await this.getMessage(id);
+            const message = await this.webhookClient.getMessage(id);
             attachmentUrls.push(message.attachments[0].url);
         }
         return attachmentUrls;
@@ -107,7 +156,7 @@ class DiscordFileStorage {
             onProgress(0, sourceFile.size);
         }
         for await (const chunk of readFile(sourceFile, FILE_CHUNK_SIZE)) {
-            const result = await this.sendAttachment(`${namePrefix}_${index}`, new Blob([chunk]));
+            const result = await this.webhookClient.sendAttachment(`${namePrefix}_${index}`, new Blob([chunk]));
             messageIds.push(result.id);
             uploadedBytes += chunk.byteLength;
             index++;
@@ -130,9 +179,7 @@ class DiscordFileStorage {
             onProgress(0, messageIds.length);
         }
         for (let id of messageIds) {
-            await fetch(`https://discordapp.com/api/webhooks/${this.id}/${this.token}/messages/${id}`, {
-                method: 'DELETE',
-            });
+            await this.webhookClient.deleteMessage(id);
             chunksDeleted++;
             if (onProgress) {
                 onProgress(chunksDeleted, messageIds.length);
