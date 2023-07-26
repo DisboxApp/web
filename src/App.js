@@ -160,6 +160,11 @@ function App() {
         if (row.name === newValue) {
             return;
         }
+        if (newValue.includes(FILE_DELIMITER)) {
+            alert(`File name cannot contain "${FILE_DELIMITER}".`);
+            updateRowById(params.id, row);
+            return;
+        }
         try {
             const changedFile = await fileManager.renameFile(row.path, newValue);
             updateRowById(params.id, changedFile);
