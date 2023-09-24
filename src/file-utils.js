@@ -18,6 +18,7 @@ export async function pickLocationAsWritable(suggestedName) {
         }]
     }
     const fileHandler = await window.showSaveFilePicker(pickerConfig);
+    console.log(fileHandler);
     return await (await fileHandler.createWritable()).getWriter();
 }
 
