@@ -11,7 +11,7 @@ export default function Setup() {
   };
   return (
     <div className='pb-4'>
-      <div className='w-full flex-col justify-center bg-gray-800 py-8'>
+      <div className='w-full flex-col justify-center bg-gray-800 py-4'>
         <span className='flex justify-center text-center text-3xl font-bold text-white'>
           Setup
         </span>
@@ -21,12 +21,12 @@ export default function Setup() {
       </div>
       <div className='w-full flex-col items-center justify-center px-4'>
         <ol className='align w-full list-inside list-decimal flex-col justify-center text-center'>
-          <li className='p-3'>
+          <li className='p-2'>
             <span className='block w-full text-black'>
               Open a Discord account
             </span>
           </li>
-          <li className='p-3'>
+          <li className='p-2'>
             <span className='block w-full text-black'>
               <span className='font-bold'>Create a new server</span>
             </span>
@@ -35,20 +35,20 @@ export default function Setup() {
               your files
             </span>
           </li>
-          <li className='p-3'>
+          <li className='p-2'>
             <span className='block w-full text-black'>
               Open <span className='font-bold'>Server Settings</span> from the
               top left menu and select Integrations, then choose{' '}
               <span className='font-bold'>Create Webhook</span>
             </span>
           </li>
-          <li className='p-3'>
+          <li className='p-2'>
             <span className='block w-full text-black'>
               Copy the URL of the webhook you just created by clicking the{' '}
               <span className='font-bold'>Copy Webhook URL button</span>
             </span>
           </li>
-          <li className='p-3'>
+          <li className='p-2'>
             <span className='block w-full text-black'>
               This URL will be used as your password for the Disbox client and
               it provides full access to all your files
@@ -61,7 +61,7 @@ export default function Setup() {
               if you forget it.
             </span>
           </li>
-          <li className='p-3'>
+          <li className='p-2'>
             <span className='block w-full text-black'>
               <span className='font-bold'>Paste the URL</span> below and click{' '}
               <span className='font-bold'>Continue</span>
