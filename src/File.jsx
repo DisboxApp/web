@@ -56,7 +56,7 @@ function File() {
 
   useEffect(() => {
     try {
-      chrome.runtime.sendMessage(
+      chrome?.runtime.sendMessage(
         'jklpfhklkhbfgeencifbmkoiaokeieah',
         { message: {} },
         (response) => {
@@ -118,7 +118,7 @@ function File() {
           </>
         )}
 
-        {!currentlyDownloading && progressValue != -1 && (
+        {!currentlyDownloading && progressValue !== -1 && (
           <div className='flex w-full items-center justify-center pt-4'>
             <span className='text-center text-2xl font-bold text-black'>
               Download complete

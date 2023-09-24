@@ -96,10 +96,6 @@ function App() {
   }, []);
 
   useEffect(() => {
-    console.log(savePickerAvailable);
-  }, [savePickerAvailable]);
-
-  useEffect(() => {
     if (progressValue === 100 || progressValue === -1) {
       setTimeout(() => {
         setShowProgress(false);
@@ -146,7 +142,6 @@ function App() {
 
   const showDirectory = async (path) => {
     setPath(path);
-    const parent = await fileManager.getParent(path);
     // setParent(parent ? parent.path : null);
     setRows(Object.values(fileManager.getChildren(path)));
   };
