@@ -20,7 +20,7 @@ function File() {
   const [progressValue, setProgressValue] = useState(-1);
   const [currentlyDownloading, setCurrentlyDownloading] = useState(false);
   const [showExtensionDialog, setShowExtensionDialog] = useState(false);
-  const [savePickerAvailable, setSavePickerAvailable] = useState(false);
+  const [savePickerAvailable, setSavePickerAvailable] = useState(null);
 
   const onProgress = (value, total) => {
     const percentage = Number(Math.round((value / total) * 100).toFixed(0));

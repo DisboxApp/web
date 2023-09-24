@@ -62,7 +62,7 @@ function App() {
   const [showProgress, setShowProgress] = useState(false);
   const [progressValue, setProgressValue] = useState(-1);
   const [showExtensionDialog, setShowExtensionDialog] = useState(false);
-  const [savePickerAvailable, setSavePickerAvailable] = useState(false);
+  const [savePickerAvailable, setSavePickerAvailable] = useState(null);
   const [activeShareUrl, setActiveShareUrl] = useState('');
 
   useEffect(() => {
