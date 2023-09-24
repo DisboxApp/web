@@ -5,6 +5,7 @@ import { useSearchParams } from 'react-router-dom';
 import { downloadFromAttachmentUrls } from './disbox-file-manager';
 import { formatSize, pickLocationAsWritable } from './file-utils.js';
 import AlertDownloading from './AlertDownloading';
+import AlertExtension from './AlertExtension';
 
 const BorderLinearProgress = styled(LinearProgress)(({}) => ({
   height: 20,
@@ -84,6 +85,10 @@ function File() {
         </span>
       </div>
       <AlertDownloading savePickerAvailable={savePickerAvailable} />
+      <AlertExtension
+        showExtensionDialog={showExtensionDialog}
+        setShowExtensionDialog={setShowExtensionDialog}
+      />
       <div className='w-full flex-col items-center justify-center px-4 pt-2'>
         <div className=''>{searchParams.get('name')}</div>
         <div className='pb-2'>{formatSize(searchParams.get('size'))}</div>

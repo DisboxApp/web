@@ -19,9 +19,7 @@ import SearchBar from './SearchBar';
 import ThemeSwitch from './ThemeSwitch';
 import Clipboard from 'react-clipboard.js';
 import AlertDownloading from './AlertDownloading';
-
-const EXTENSION_URL =
-  'https://chrome.google.com/webstore/detail/disboxdownloader/jklpfhklkhbfgeencifbmkoiaokeieah';
+import AlertExtension from './AlertExtension';
 
 const darkTheme = createTheme({
   palette: {
@@ -400,34 +398,10 @@ function App() {
             </button>
           </div>
           <AlertDownloading savePickerAvailable={savePickerAvailable} />
-          <div
-            className={
-              showExtensionDialog
-                ? 'm-2 w-full rounded-lg bg-yellow-500 p-2'
-                : 'hidden'
-            }
-          >
-            Disbox recommends using the official Disbox chrome extension for
-            better download speeds and increased security.
-            <div className='flex justify-end pr-5'>
-              <button
-                className='rounded-lg bg-blue-500 px-2 py-1 text-lg font-bold text-white hover:bg-blue-700'
-                onClick={() => {
-                  window.open(EXTENSION_URL);
-                }}
-              >
-                Install
-              </button>
-              <button
-                className='ml-2 rounded-lg bg-red-500 px-2 py-1 text-lg font-bold text-white hover:bg-red-700'
-                onClick={() => {
-                  setShowExtensionDialog(false);
-                }}
-              >
-                Later
-              </button>
-            </div>
-          </div>
+          <AlertExtension
+            showExtensionDialog={showExtensionDialog}
+            setShowExtensionDialog={setShowExtensionDialog}
+          />
           <div
             className={
               activeShareUrl ? 'm-2 w-full rounded-lg bg-green-500' : 'hidden'
