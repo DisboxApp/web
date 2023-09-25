@@ -38,7 +38,7 @@ Suggestions and contributions are welcome!
 
 # How it works
 
-In essence, Disbox simply takes your upload files, and splits them to fit in Discord's (8MB) file size limit. It then stores metadata about the file like the file name and path in a separate database. This allows for a simple way to manage your files and download them back as one chunk.
+In essence, Disbox simply takes your upload files, and splits them to fit in Discord's (25MB) file size limit. It then stores metadata about the file like the file name and path in a separate central database. This allows for a simple way to manage your files and download them back as one chunk.
 
 ## Technical Details
 
@@ -61,7 +61,7 @@ There are 2 main ways to implement this project:
 
 #### CORS
 
-As with any secure site, discord doesn't other websites to fetch and download data from the API. This is a big issue, because it blocks the ability to download your files from the web client.
+As with any secure site, discord doesn't allow other websites to fetch and download data from the API programmatically. This is a big issue, because it blocks the ability to download your files from the web client directly.
 
 There are 2 main ways to solve this, and because both are viable and fit for different use cases, Disbox implements both.
 
