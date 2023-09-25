@@ -45,7 +45,7 @@ export default function Setup() {
           <li className='p-2'>
             <span className='block w-full text-black'>
               Copy the URL of the webhook you just created by clicking the{' '}
-              <span className='font-bold'>Copy Webhook URL button</span>
+              <span className='font-bold'>Copy Webhook URL</span> button
             </span>
           </li>
           <li className='p-2'>
