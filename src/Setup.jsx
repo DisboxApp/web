@@ -72,16 +72,18 @@ export default function Setup() {
           <form onSubmit={onContinue}>
             <input
               id='webhookUrl'
-              className='mb-4 w-full rounded-full bg-gray-200 px-4 py-2 text-lg font-bold text-black hover:bg-gray-300'
+              className='mb-4 w-1/2 rounded-full bg-gray-200 px-4 py-2 text-center text-lg font-bold text-black hover:bg-gray-300'
               type='password'
               placeholder='Webhook URL'
             />
-            <button
-              className='rounded-full bg-blue-500 px-4 py-2 text-lg font-bold text-white hover:bg-blue-700'
-              type='submit'
-            >
-              Continue
-            </button>
+            <div className='w-full flex-col justify-center pt-2 text-center'>
+              <button
+                className='rounded-full bg-blue-500 px-4 py-2 text-lg font-bold text-white hover:bg-blue-700'
+                type='submit'
+              >
+                Continue
+              </button>
+            </div>
           </form>
         </div>
       </div>
