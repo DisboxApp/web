@@ -256,7 +256,7 @@ function App() {
             const encodedUrls = pako.deflate(base64AttachmentUrlsBase.replace(/\?(.*?)"/g, '"'));
             const base64AttachmentUrls = btoa(String.fromCharCode.apply(null, encodedUrls)).replace(/\+/g, '~').replace(/\//g, '_').replace(/=/g, '-');
 
-            const shareUrl = encodeURI(urlJoin(window.location.href, `/file/?name=${fileName}&attachmentUrls=${base64AttachmentUrls}&size=${params.row.size}`));
+            const shareUrl = encodeURI(urlJoin(window.location.href, `/file/?name=${fileName}&size=${params.row.size}#${base64AttachmentUrls}`));
 
             if (navigator.share) {
                 await navigator.share({

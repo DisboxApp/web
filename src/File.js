@@ -8,6 +8,7 @@ import { downloadFromAttachmentUrls } from "./disbox-file-manager";
 import { formatSize, pickLocationAsWritable } from "./file-utils.js";
 import NavigationBar from './NavigationBar';
 import pako from 'pako'
+import { useLocation } from "react-router-dom";
 
 const BorderLinearProgress = styled(LinearProgress)(({ }) => ({
     height: 20,
@@ -22,6 +23,7 @@ function File() {
     const [searchParams] = useSearchParams();
     const [progressValue, setProgressValue] = useState(-1);
     const [currentlyDownloading, setCurrentlyDownloading] = useState(false);
+    const fileString = useLocation();
 
     const onProgress = (value, total) => {
         const percentage = Number(Math.round((value / total) * 100).toFixed(0));
@@ -37,7 +39,7 @@ function File() {
 
     async function download () {
         const fileName = searchParams.get("name");
-        const base64AttachmentUrls = atob(searchParams.get("attachmentUrls").replace(/~/g, '+').replace(/_/g, '/').replace(/-/g, '='));
+        const base64AttachmentUrls = atob( fileString.hash.replace(/~/g, '+').replace(/_/g, '/').replace(/-/g, '=').replace(/#/g, '') );
         const u8Array = new Uint8Array(base64AttachmentUrls.length);
         for (let i = 0; i < base64AttachmentUrls.length; i++) {
           u8Array[i] = base64AttachmentUrls.charCodeAt(i);
@@ -57,7 +59,7 @@ function File() {
     }
 
     
-    return (searchParams.get("name") !== null && searchParams.get("attachmentUrls") !== null && searchParams.get("size") !== null) ? 
+    return (searchParams.get("name") !== null && fileString.hash !== null && searchParams.get("size") !== null) ? 
     (<div>
         <Helmet>
             <title> {searchParams.get("name")}</title>
