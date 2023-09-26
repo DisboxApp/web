@@ -15,6 +15,7 @@ import NavigationBar from './NavigationBar';
 import PathParts from './PathParts';
 import SearchBar from './SearchBar';
 import ThemeSwitch from './ThemeSwitch';
+import pako from 'pako'
 
 const EXTENSION_URL = "https://chrome.google.com/webstore/detail/disboxdownloader/jklpfhklkhbfgeencifbmkoiaokeieah";
 
@@ -251,9 +252,12 @@ function App() {
         try {
             const fileName = params.row.name;
             const attachmentUrls = await fileManager.getAttachmentUrls(params.row.path);
-            const base64AttachmentUrls = btoa(JSON.stringify(attachmentUrls)).replace(/\+/g, '~').replace(/\//g, '_').replace(/=/g, '-');
+            const base64AttachmentUrlsBase = JSON.stringify(attachmentUrls);
+            const encodedUrls = pako.deflate(base64AttachmentUrlsBase.replace(/\?(.*?)"/g, '"'));
+            const base64AttachmentUrls = btoa(String.fromCharCode.apply(null, encodedUrls)).replace(/\+/g, '~').replace(/\//g, '_').replace(/=/g, '-');
 
             const shareUrl = encodeURI(urlJoin(window.location.href, `/file/?name=${fileName}&attachmentUrls=${base64AttachmentUrls}&size=${params.row.size}`));
+
             if (navigator.share) {
                 await navigator.share({
                     title: fileName,

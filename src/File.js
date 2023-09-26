@@ -7,6 +7,7 @@ import './App.css';
 import { downloadFromAttachmentUrls } from "./disbox-file-manager";
 import { formatSize, pickLocationAsWritable } from "./file-utils.js";
 import NavigationBar from './NavigationBar';
+import pako from 'pako'
 
 const BorderLinearProgress = styled(LinearProgress)(({ }) => ({
     height: 20,
@@ -36,15 +37,23 @@ function File() {
 
     async function download () {
         const fileName = searchParams.get("name");
-        let base64AttachmentUrls = searchParams.get("attachmentUrls");
-        base64AttachmentUrls = base64AttachmentUrls.replace(/~/g, '+').replace(/_/g, '/').replace(/-/g, '=');
-        const attachmentUrls = atob(base64AttachmentUrls);
+        const base64AttachmentUrls = atob(searchParams.get("attachmentUrls").replace(/~/g, '+').replace(/_/g, '/').replace(/-/g, '='));
+        const u8Array = new Uint8Array(base64AttachmentUrls.length);
+        for (let i = 0; i < base64AttachmentUrls.length; i++) {
+          u8Array[i] = base64AttachmentUrls.charCodeAt(i);
+                                                             }
+    try {
+        const attachmentUrls = pako.inflate(new Uint8Array(u8Array), { to: 'string' });
         const attachmentUrlsArray = JSON.parse(attachmentUrls);
 
         const writable = await pickLocationAsWritable(fileName);
         setCurrentlyDownloading(true);
         setProgressValue(0);
-        await downloadFromAttachmentUrls(attachmentUrlsArray, writable, onProgress, searchParams.get("size"));
+        await downloadFromAttachmentUrls(attachmentUrlsArray, writable, onProgress, searchParams.get("size"));               
+    } catch (error) {
+        console.log(error);
+    }
+        
     }
 
     
