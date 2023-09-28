@@ -23,7 +23,7 @@ function File() {
     const [searchParams] = useSearchParams();
     const [progressValue, setProgressValue] = useState(-1);
     const [currentlyDownloading, setCurrentlyDownloading] = useState(false);
-    const fileString = useLocation();
+    const locationData = useLocation();
 
     const onProgress = (value, total) => {
         const percentage = Number(Math.round((value / total) * 100).toFixed(0));
@@ -39,7 +39,7 @@ function File() {
 
     async function download () {
         const fileName = searchParams.get("name");
-        const base64AttachmentUrls = atob( fileString.hash.replace(/~/g, '+').replace(/_/g, '/').replace(/-/g, '=').replace(/#/g, '') );
+        const base64AttachmentUrls = atob( locationData.hash.replace(/~/g, '+').replace(/_/g, '/').replace(/-/g, '=').replace(/#/g, '') );
         const u8Array = new Uint8Array(base64AttachmentUrls.length);
         for (let i = 0; i < base64AttachmentUrls.length; i++) {
           u8Array[i] = base64AttachmentUrls.charCodeAt(i);
@@ -59,7 +59,7 @@ function File() {
     }
 
     
-    return (searchParams.get("name") !== null && fileString.hash !== null && searchParams.get("size") !== null) ? 
+    return (searchParams.get("name") !== null && locationData.hash !== null && searchParams.get("size") !== null) ? 
     (<div>
         <Helmet>
             <title> {searchParams.get("name")}</title>

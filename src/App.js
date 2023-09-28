@@ -252,11 +252,11 @@ function App() {
         try {
             const fileName = params.row.name;
             const attachmentUrls = await fileManager.getAttachmentUrls(params.row.path);
-            const base64AttachmentUrlsBase = JSON.stringify(attachmentUrls);
-            const encodedUrls = pako.deflate(base64AttachmentUrlsBase.replace(/\?(.*?)"/g, '"'));
-            const base64AttachmentUrls = btoa(String.fromCharCode.apply(null, encodedUrls)).replace(/\+/g, '~').replace(/\//g, '_').replace(/=/g, '-');
+            const stringifyAttachmentUrls = JSON.stringify(attachmentUrls);
+            const encodedAttachmentUrls = pako.deflate(stringifyAttachmentUrls);
+            const base64EncodedAttachmentUrls = btoa(String.fromCharCode.apply(null, encodedAttachmentUrls)).replace(/\+/g, '~').replace(/\//g, '_').replace(/=/g, '-');
 
-            const shareUrl = encodeURI(urlJoin(window.location.href, `/file/?name=${fileName}&size=${params.row.size}#${base64AttachmentUrls}`));
+            const shareUrl = encodeURI(urlJoin(window.location.href, `/file/?name=${fileName}&size=${params.row.size}#${base64EncodedAttachmentUrls}`));
 
             if (navigator.share) {
                 await navigator.share({
