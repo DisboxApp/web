@@ -148,7 +148,6 @@ class DiscordFileStorage {
             const shortenedUrl = `${urlObj.protocol}//${urlObj.host}${urlObj.pathname}`;
             attachmentUrls.push(shortenedUrl);
         }
-        console.log(attachmentUrls);
         return attachmentUrls;
     }
 
