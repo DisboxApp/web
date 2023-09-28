@@ -61,7 +61,7 @@ There are 2 main ways to implement this project:
 
 #### CORS
 
-As with any secure site, discord doesn't allow other websites to fetch and download data from the API programmatically. This is a big issue, because it blocks the ability to download your files from the web client directly.
+As with any secure site, discord doesn't allow other websites to fetch and download data from the API. This is a big issue, because it blocks the ability to download your files from the web client directly.
 
 There are 2 main ways to solve this, and because both are viable and fit for different use cases, Disbox implements both.
 
