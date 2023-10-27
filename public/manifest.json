@@ -1,6 +1,6 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
+  "short_name": "Disbox",
+  "name": "Fast Secure File Storage using Discord",
   "icons": [
     {
       "src": "favicon.ico",
@@ -18,7 +18,7 @@
       "sizes": "512x512"
     }
   ],
-  "start_url": ".",
+  "start_url": "/web",
   "display": "standalone",
   "theme_color": "#000000",
   "background_color": "#ffffff"

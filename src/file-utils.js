@@ -1,6 +1,9 @@
 import * as mime from 'react-native-mime-types';
 import { FILE_DELIMITER } from "./disbox-file-manager";
 
+export const EXTENSION_URL =
+  'https://chrome.google.com/webstore/detail/disboxdownloader/jklpfhklkhbfgeencifbmkoiaokeieah';
+
 export function getMimeType(name) {
     return mime.lookup(name) || 'application/octet-stream';
 }
@@ -18,6 +21,7 @@ export async function pickLocationAsWritable(suggestedName) {
         }]
     }
     const fileHandler = await window.showSaveFilePicker(pickerConfig);
+    console.log(fileHandler);
     return await (await fileHandler.createWritable()).getWriter();
 }
 
