@@ -59,7 +59,7 @@ There are 2 main ways to implement this project:
     - It requires every user to create a bot account, which is a hassle, and makes using Disbox a lot more difficult.
 - Webhooks: While webhooks have very minimal permissions, they are very easy to create. This is the main reason Disbox uses webhooks and not bots.
 
-#### CORS
+#### CONS
 
 As with any secure site, discord doesn't allow other websites to fetch and download data from the API. This is a big issue, because it blocks the ability to download your files from the web client directly.
 
