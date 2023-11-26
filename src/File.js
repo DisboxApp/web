@@ -10,7 +10,7 @@ import NavigationBar from './NavigationBar';
 import pako from 'pako'
 import { useLocation } from "react-router-dom";
 
-const BorderLinearProgress = styled(LinearProgress)(({ }) => ({
+const BorderLinearProgress = styled(LinearProgress)(( ) => ({
     height: 20,
     borderRadius: 5,
     [`& .${linearProgressClasses.bar}`]: {
@@ -28,7 +28,6 @@ function File() {
     const onProgress = (value, total) => {
         const percentage = Number(Math.round((value / total) * 100).toFixed(0));
         setProgressValue(percentage);
-        debugger
         if (percentage === 100) {
             setTimeout(() => {
                 setCurrentlyDownloading(false);
@@ -37,36 +36,40 @@ function File() {
         }
     }
 
-    async function download () {
-        const fileName = searchParams.get("name");
-        if (searchParams.get("attachmentUrls")) {
-            let base64AttachmentUrls = searchParams.get("attachmentUrls");
-            base64AttachmentUrls = base64AttachmentUrls.replace(/~/g, '+').replace(/_/g, '/').replace(/-/g, '=');
-            const attachmentUrls = atob(base64AttachmentUrls);
-            const attachmentUrlsArray = JSON.parse(attachmentUrls);
-            const writable = await pickLocationAsWritable(fileName);
-            setCurrentlyDownloading(true);
-            setProgressValue(0);
-            await downloadFromAttachmentUrls(attachmentUrlsArray, writable, onProgress, searchParams.get("size"));      
+async function download() {
+    const fileName = searchParams.get("name");
+    let attachmentUrlsArray;
 
-        } else {
-            const base64AttachmentUrls = atob( locationData.hash.replace(/~/g, '+').replace(/_/g, '/').replace(/-/g, '=').replace(/#/g, '') );
-            const u8Array = new Uint8Array(base64AttachmentUrls.length);
-            for (let i = 0; i < base64AttachmentUrls.length; i++) {
+    if (searchParams.get("attachmentUrls")) {
+        let base64AttachmentUrls = searchParams.get("attachmentUrls");
+        base64AttachmentUrls = base64AttachmentUrls.replace(/~/g, '+').replace(/_/g, '/').replace(/-/g, '=');
+        attachmentUrlsArray = JSON.parse(atob(base64AttachmentUrls));
+    } else {
+        const base64AttachmentUrls = atob(locationData.hash.replace(/~/g, '+').replace(/_/g, '/').replace(/-/g, '=').replace(/#/g, ''));
+        const u8Array = new Uint8Array(base64AttachmentUrls.length);
+        for (let i = 0; i < base64AttachmentUrls.length; i++) {
             u8Array[i] = base64AttachmentUrls.charCodeAt(i);
-                                                                    }
+        }
+
+        try {
+            const attachmentUrls = pako.inflate(new Uint8Array(u8Array), { to: 'string' });
+            attachmentUrlsArray = JSON.parse(attachmentUrls);
+        } catch (error) {
+            console.log(error);
+            return; // or handle the error accordingly
+        }
+    }
+
     try {
-        const attachmentUrls = pako.inflate(new Uint8Array(u8Array), { to: 'string' });
-        const attachmentUrlsArray = JSON.parse(attachmentUrls);
         const writable = await pickLocationAsWritable(fileName);
         setCurrentlyDownloading(true);
         setProgressValue(0);
-        await downloadFromAttachmentUrls(attachmentUrlsArray, writable, onProgress, searchParams.get("size"));               
+        await downloadFromAttachmentUrls(attachmentUrlsArray, writable, onProgress, searchParams.get("size"));
     } catch (error) {
         console.log(error);
+        // Handle the download error
     }
 }
-    }
 
     
     return (searchParams.get("name") !== null && locationData.hash !== null && searchParams.get("size") !== null) ? 
@@ -89,7 +92,7 @@ function File() {
                     {currentlyDownloading &&                                 
                         <BorderLinearProgress variant="determinate" value={progressValue} style={{width: "50%", marginLeft: "25%", marginTop: "1rem" }}/>
                     }
-                    {(!currentlyDownloading && progressValue != -1) &&
+                    {(!currentlyDownloading && progressValue !== -1) &&
                         <h1 style={{ fontSize: "2rem", display: "block",  marginTop: "1rem" }}><b>Download complete.</b></h1>
                     }
                 </div>
