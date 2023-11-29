@@ -15,6 +15,7 @@ import NavigationBar from './NavigationBar';
 import PathParts from './PathParts';
 import SearchBar from './SearchBar';
 import ThemeSwitch from './ThemeSwitch';
+import pako from 'pako'
 import ExtensionDialog from './ExtensionDialog.js';
 
 const darkTheme = createTheme({
@@ -238,9 +239,12 @@ function App() {
         try {
             const fileName = params.row.name;
             const attachmentUrls = await fileManager.getAttachmentUrls(params.row.path);
-            const base64AttachmentUrls = btoa(JSON.stringify(attachmentUrls)).replace(/\+/g, '~').replace(/\//g, '_').replace(/=/g, '-');
+            const stringifyAttachmentUrls = JSON.stringify(attachmentUrls);
+            const encodedAttachmentUrls = pako.deflate(stringifyAttachmentUrls);
+            const base64EncodedAttachmentUrls = btoa(String.fromCharCode.apply(null, encodedAttachmentUrls)).replace(/\+/g, '~').replace(/\//g, '_').replace(/=/g, '-');
 
-            const shareUrl = encodeURI(urlJoin(window.location.href, `/file/?name=${fileName}&attachmentUrls=${base64AttachmentUrls}&size=${params.row.size}`));
+            const shareUrl = encodeURI(urlJoin(window.location.href, `/file/?name=${fileName}&size=${params.row.size}#${base64EncodedAttachmentUrls}`));
+
             if (navigator.share) {
                 await navigator.share({
                     title: fileName,
