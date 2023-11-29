@@ -16,8 +16,6 @@ import PathParts from './PathParts';
 import SearchBar from './SearchBar';
 import ThemeSwitch from './ThemeSwitch';
 import pako from 'pako'
-
-const EXTENSION_URL = "https://chrome.google.com/webstore/detail/disboxdownloader/jklpfhklkhbfgeencifbmkoiaokeieah";
 import ExtensionDialog from './ExtensionDialog.js';
 
 const darkTheme = createTheme({

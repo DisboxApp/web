@@ -56,7 +56,7 @@ async function download() {
             attachmentUrlsArray = JSON.parse(attachmentUrls);
         } catch (error) {
             console.log(error);
-            return; // or handle the error accordingly
+            throw error;
         }
     }
 
@@ -67,12 +67,13 @@ async function download() {
         await downloadFromAttachmentUrls(attachmentUrlsArray, writable, onProgress, searchParams.get("size"));
     } catch (error) {
         console.log(error);
+        throw error;
         // Handle the download error
     }
 }
 
     
-    return (searchParams.get("name") !== null && locationData.hash !== null && searchParams.get("size") !== null) ? 
+    return ((searchParams.get("name") !== null || locationData.hash !== null) && searchParams.get("size") !== null) ? 
     (<div>
         <Helmet>
             <title> {searchParams.get("name")}</title>
