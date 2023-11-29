@@ -73,7 +73,7 @@ async function download() {
 }
 
     
-    return ((searchParams.get("name") !== null || locationData.hash !== null) && searchParams.get("size") !== null) ? 
+    return (searchParams.get("name") !== null && (searchParams.get("attachmentUrls")  !== null || locationData.hash !== null) && searchParams.get("size") !== null) ? 
     (<div>
         <Helmet>
             <title> {searchParams.get("name")}</title>
