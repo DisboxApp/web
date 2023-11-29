@@ -1,5 +1,7 @@
 import * as mime from 'react-native-mime-types';
 import { FILE_DELIMITER } from "./disbox-file-manager";
+import { showSaveFilePicker } from "native-file-system-adapter";
+
 
 export function getMimeType(name) {
     return mime.lookup(name) || 'application/octet-stream';
@@ -17,7 +19,7 @@ export async function pickLocationAsWritable(suggestedName) {
             accept: {[mimeType]: [extension] }
         }]
     }
-    const fileHandler = await window.showSaveFilePicker(pickerConfig);
+    const fileHandler = await showSaveFilePicker(pickerConfig);
     return await (await fileHandler.createWritable()).getWriter();
 }
 

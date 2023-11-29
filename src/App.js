@@ -18,6 +18,7 @@ import ThemeSwitch from './ThemeSwitch';
 import pako from 'pako'
 
 const EXTENSION_URL = "https://chrome.google.com/webstore/detail/disboxdownloader/jklpfhklkhbfgeencifbmkoiaokeieah";
+import ExtensionDialog from './ExtensionDialog.js';
 
 const darkTheme = createTheme({
     palette: {
@@ -61,20 +62,8 @@ function App() {
     const [currentAction, setCurrentAction] = useState("");
     const [showProgress, setShowProgress] = useState(false);
     const [progressValue, setProgressValue] = useState(-1);
-    const [showExtensionDialog, setShowExtensionDialog] = useState(false);
-
 
     useEffect(() => {
-        try {
-            chrome.runtime.sendMessage("jklpfhklkhbfgeencifbmkoiaokeieah", { message: {} }, response => {
-                if (!response || !response.installed) {
-                    setShowExtensionDialog(true);
-                }
-            });
-        } catch {
-            setShowExtensionDialog(true);
-        }
-
         const webhookUrl = localStorage.getItem("webhookUrl");
         async function init() {
             if (webhookUrl) {
@@ -311,23 +300,7 @@ function App() {
             <NavigationBar />
             <ThemeProvider theme={theme ? darkTheme : lightTheme}>
                 <CssBaseline />
-                <Dialog open={showExtensionDialog} onClose={() => { setShowExtensionDialog(false) }}>
-                    <DialogTitle>Warning</DialogTitle>
-                    <DialogContent>
-                        <DialogContentText>
-                            Disbox recommends using the official Disbox chrome extension for
-                            better download speeds and increased security.
-                        </DialogContentText>
-                    </DialogContent>
-                    <DialogActions>
-                        <Button onClick={() => { setShowExtensionDialog(false) }}>Remind me later</Button>
-                        <Button variant="contained" onClick={() => {
-                            setShowExtensionDialog(false);
-                            window.open(EXTENSION_URL, "_blank").focus();
-                        }} >Install</Button>
-                    </DialogActions>
-                </Dialog>
-
+                <ExtensionDialog/>
                 <Snackbar
                     message=""
                     anchorOrigin={{ vertical: 'bottom', horizontal: 'right', }}
@@ -395,7 +368,7 @@ function App() {
                             showColumnRightBorder={false}
                             onCellEditCommit={onCellEditCommit}
                             onCellDoubleClick={onCellDoubleClick}
-                        />
+                                                    />
                     </div>
                 </div>
             </ThemeProvider>
