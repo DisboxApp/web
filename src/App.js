@@ -246,16 +246,19 @@ function App() {
             const shareUrl = encodeURI(urlJoin(window.location.href, `/file/?name=${fileName}&size=${params.row.size}#${base64EncodedAttachmentUrls}`));
 
             if (navigator.share) {
-                await navigator.share({
-                    title: fileName,
-                    url: shareUrl
-                });
+                try {
+                    await navigator.share({title: fileName, url: shareUrl});
+                } catch (e) {
+                    if (e instanceof DOMException && e.message === "Failed to execute 'share' on 'Navigator': Must be handling a user gesture to perform a share request.") {
+                        navigator.clipboard.writeText(shareUrl);
+                        alert("File was too large to share. A link to it has been copied to your clipboard.");
+                    }
+                }
             } else {
                 navigator.clipboard.writeText(shareUrl);
                 alert("File shared successfully. A link to it has been copied to your clipboard.");
             }
 
-            // alert("File shared successfully. The link has been copied to your clipboard.");
         } catch (e) {
             alert(`Failed to share file: ${e}`);
             throw e;
