@@ -1,7 +1,7 @@
 /*global chrome*/
 import { sha256 } from 'js-sha256';
 
-const SERVER_URL = 'https://disboxserver.azurewebsites.net';
+const SERVER_URL = 'https://disbox-server.fly.dev';
 export const FILE_DELIMITER = '/';
 const FILE_CHUNK_SIZE = 25 * 1024 * 1023 // Almost 25MB
 
@@ -137,7 +137,6 @@ class DiscordFileStorage {
     constructor(webhookUrl) {
         this.webhookClient = new DiscordWebhookClient(webhookUrl);
     }
-
 
     async getAttachmentUrls(messageIds) {
         const attachmentUrls = [];
