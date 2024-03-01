@@ -97,8 +97,11 @@ class DiscordWebhookClient {
             this.rateLimitWaits[type] = (retryAfter) * 1000;
             console.log("Rate limit exceeded, retrying");
             return await this.fetchFromApi(path, {method, body, type});
-        }
-        if (status >= 400) {
+        } else if (status === 502) {
+            this.rateLimitWaits[type] = 10 * 1000;
+            console.log("Gateway unavailable, retrying");
+            return await this.fetchFromApi(path, {method, body, type});
+        } else if (status >= 400) {
             throw new Error(`Failed to ${type} with status ${status}: ${await response.text()}`);
         }
         return response;
