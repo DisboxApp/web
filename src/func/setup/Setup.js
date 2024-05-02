@@ -1,7 +1,7 @@
 import { Button, Form } from "react-bootstrap";
 import { useNavigate } from 'react-router-dom';
-import './App.css';
-import NavigationBar from './NavigationBar';
+import '../../css/app.module.css';
+import NavigationBar from '../search/NavigationBar';
 
 function Setup() {
     const navigate = useNavigate();

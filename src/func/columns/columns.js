@@ -1,6 +1,6 @@
 import { Button } from '@mui/material';
-import { formatSize, getMimeType } from './file-utils';
-import FileIcon from './FileIcon';
+import { formatSize, getMimeType } from '../file/file-utils';
+import FileIcon from '../icons/FileIcon';
 
 function formatDateString(dateString) {
     let date = new Date(dateString);
@@ -25,41 +25,42 @@ export default function buildColumns(fileManager, currentAction, onShareClick, o
         {
             field: 'name',
             headerName: 'Name',
-            width: 470,
+            flex: 0.2,
             editable: true,
             headerClassName: 'extra-width',
+            cellClassName: 'name-width'
         },
         {
             field: 'created_at',
             headerName: 'Created at',
             type: 'date',
-            width: 200,
+            flex: 0.2,
             valueFormatter: (params) => formatDateString(params.value),
         },
         {
             field: 'updated_at',
             headerName: 'Updated at',
             type: 'date',
-            width: 200,
+            flex: 0.2,
             valueFormatter: (params) => formatDateString(params.value),
         },
         {
             field: 'size',
             headerName: 'Size',
             // type: 'number',
-            width: 150,
+            flex: 0.2,
             valueFormatter: (params) => formatSize(params.value),
         },
         {
             field: 'path',
             headerName: 'Path',
-            width: 490,
+            flex: 0.2,
             // hide: path !== null, // Deprecated
         },
         {
             field: 'share',
             headerName: 'Share',
-            width: 85,
+            flex: 0.2,
             style: {
                 fontSize: '2rem',
             },
@@ -81,7 +82,7 @@ export default function buildColumns(fileManager, currentAction, onShareClick, o
         {
             field: 'download',
             headerName: 'Download',
-            width: 120,
+            flex: 0.2,
             style: {
                 fontSize: '2rem',
             },
@@ -103,7 +104,7 @@ export default function buildColumns(fileManager, currentAction, onShareClick, o
         {
             field: 'delete',
             headerName: 'Delete',
-            width: 85,
+            flex: 0.1,
             style: {
                 fontSize: '2rem',
             },

@@ -5,11 +5,11 @@ import {
   BrowserRouter, Route, Routes
 } from "react-router-dom";
 import App from './App';
-import File from './File';
+import File from './func/file/File';
 import Home from './Home';
 import './index.css';
-import reportWebVitals from './reportWebVitals';
-import Setup from './Setup';
+import reportWebVitals from './func/report/reportWebVitals';
+import Setup from './func/setup/Setup';
 
 function HomeOrApp() {
   if (localStorage.getItem("webhookUrl") === null) {
@@ -21,9 +21,9 @@ function HomeOrApp() {
 
 ReactDOM.render(
   <React.StrictMode>
-    <BrowserRouter basename={'/web'}>
+    <BrowserRouter>
       <Routes>
-        {/* <Route path="/" element={<App />} /> */}
+        <Route path="/" element={<App />} />
         <Route path="" element={<HomeOrApp />}/>
         <Route path="home" element={<Home />}/>
         <Route path="setup" element={<Setup />} />

@@ -458,5 +458,3 @@ class DisboxFileManager {
 }
 
 export default DisboxFileManager;
-
-
